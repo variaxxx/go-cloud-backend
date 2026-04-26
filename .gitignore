@@ -1,0 +1,5 @@
+.env*
+!.env.example
+
+logs/
+.DS_Store
