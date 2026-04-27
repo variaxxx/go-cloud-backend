@@ -19,6 +19,6 @@ func (h *HelloHTTPHandler) GetHello(
 		map[string]string{
 			"msg": hello,
 		},
-		200,
+		http.StatusOK,
 	)
 }

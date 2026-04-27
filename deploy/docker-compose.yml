@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${PG_USER:-postgres}
+      - POSTGRES_PASSWORD=${PG_PASSWORD:-postgres}
+      - POSTGRES_DB=${PG_DB}
+    networks:
+      - backend
+    healthcheck:
+      test: [CMD-SHELL, "su -c 'pg_isready -U postgres' postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    ports:
+      - "5433:5432"
+
+  postgres-migrate:
+    image: migrate/migrate:4
+    volumes:
+      - ../migrations:/migrations
+    networks:
+      - backend
+
+networks:
+  backend:
+
+volumes:
+  postgres-data:

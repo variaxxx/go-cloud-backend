@@ -31,6 +31,7 @@ func (h *HTTPResponseHandler) JSONResponse(
 	responseBody any,
 	statusCode int,
 ) {
+	h.rw.Header().Set("Content-Type", "application/json; charset=utf-8")
 	h.rw.WriteHeader(statusCode)
 
 	if err := json.NewEncoder(h.rw).Encode(responseBody); err != nil {

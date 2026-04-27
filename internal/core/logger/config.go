@@ -20,14 +20,3 @@ func NewConfig() (Config, error) {
 
 	return config, nil
 }
-
-func NewConfigRequired() Config {
-	config, err := NewConfig()
-
-	if err != nil {
-		err = fmt.Errorf("Logger config parse: %w", err)
-		panic(err)
-	}
-
-	return config
-}
