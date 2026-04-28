@@ -12,7 +12,10 @@ import (
 )
 
 func main() {
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		fmt.Printf(".env parsing failed: %v", err)
+		os.Exit(1)
+	}
 
 	ctx, cancel := signal.NotifyContext(
 		context.Background(),
@@ -20,7 +23,7 @@ func main() {
 	)
 	defer cancel()
 
-	app, err := app_api.New()
+	app, err := app_api.New(ctx)
 	if err != nil {
 		fmt.Println("Failed to initialize app:", err)
 		os.Exit(1)

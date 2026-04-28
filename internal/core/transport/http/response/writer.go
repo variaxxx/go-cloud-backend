@@ -25,9 +25,17 @@ func (rw *HTTPResponseWriter) WriteHeader(statusCode int) {
 	rw.statusCode = statusCode
 }
 
-func (rw *HTTPResponseWriter) GetStatusCodeOrPanic() int {
+func (rw *HTTPResponseWriter) Write(data []byte) (int, error) {
 	if rw.statusCode == StatusCodeUninitialized {
-		panic("Tried to get uninitialized status code")
+		rw.statusCode = http.StatusOK
+	}
+
+	return rw.ResponseWriter.Write(data)
+}
+
+func (rw *HTTPResponseWriter) GetStatusCode() int {
+	if rw.statusCode == StatusCodeUninitialized {
+		return http.StatusOK
 	}
 	return rw.statusCode
 }

@@ -2,7 +2,6 @@ package core_http_middleware
 
 import (
 	core_logger "cloud/internal/core/logger"
-	"context"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -18,7 +17,7 @@ func Logger(log *core_logger.Logger) Middleware {
 				zap.String("url", r.URL.String()),
 			)
 
-			ctx := context.WithValue(r.Context(), "log", l)
+			ctx := core_logger.WithContext(r.Context(), l)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

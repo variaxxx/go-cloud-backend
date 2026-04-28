@@ -42,10 +42,14 @@ func (s *HTTPServer) RegisterAPIRouters(routers ...APIRouter) {
 		)
 
 		for _, route := range router.routes {
+			endpoint := fmt.Sprintf("%s %s%s", route.Method, router.prefix, route.Path)
+
 			s.routes = append(
 				s.routes,
-				fmt.Sprintf("%s %s%s", route.Method, router.prefix, route.Path),
+				endpoint,
 			)
+
+			s.logger.Debug("Registered route", zap.String("route", endpoint))
 		}
 	}
 }
@@ -62,10 +66,6 @@ func (s *HTTPServer) Run(ctx context.Context) error {
 	listener, err := net.Listen("tcp", s.cfg.Addr)
 	if err != nil {
 		return fmt.Errorf("HTTP listen: %w", err)
-	}
-
-	for _, route := range s.routes {
-		s.logger.Debug("Registered route", zap.String("route", route))
 	}
 
 	s.logger.Info("HTTP server started", zap.String("addr", s.cfg.Addr))

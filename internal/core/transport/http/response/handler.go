@@ -44,7 +44,6 @@ func (h *HTTPResponseHandler) PanicResponse(p any, msg string) {
 	err := fmt.Errorf("Unexpected panic: %v", p)
 
 	h.log.Error(msg, zap.Error(err))
-	h.rw.WriteHeader(status)
 
 	h.errorResponse(status, msg)
 }
@@ -83,8 +82,8 @@ func (h *HTTPResponseHandler) errorResponse(
 	msg string,
 ) {
 	response := map[string]string{
-		"statusCode": strconv.Itoa(statusCode),
-		"message":    msg,
+		"status_code": strconv.Itoa(statusCode),
+		"message":     msg,
 	}
 
 	h.JSONResponse(response, statusCode)

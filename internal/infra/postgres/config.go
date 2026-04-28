@@ -1,4 +1,4 @@
-package core_infra_postgres
+package infra_postgres
 
 import (
 	"fmt"

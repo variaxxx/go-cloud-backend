@@ -29,7 +29,7 @@ migrate-up:
 		-f ./deploy/docker-compose.yml \
 		run --rm postgres-migrate \
 		-path /migrations \
-		-database postgres://${PG_USER}:${PG_PASSWORD}@postgres:5432/${PG_DB} \
+		-database postgres://${PG_USER}:${PG_PASSWORD}@postgres:5432/${PG_DB}?sslmode=disable \
 		up
 
 migrate-down:
@@ -37,5 +37,5 @@ migrate-down:
 		-f ./deploy/docker-compose.yml \
 		run --rm postgres-migrate \
 		-path /migrations \
-		-database postgres://${PG_USER}:${PG_PASSWORD}@postgres:5432/${PG_DB} \
+		-database postgres://${PG_USER}:${PG_PASSWORD}@postgres:5432/${PG_DB}?sslmode=disable \
 		down
