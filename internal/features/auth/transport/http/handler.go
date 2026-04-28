@@ -34,5 +34,10 @@ func (h *Handler) Routes() []core_http_server.Route {
 			Path:    "/login",
 			Handler: h.Login,
 		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/refresh",
+			Handler: h.RefreshTokens,
+		},
 	}
 }

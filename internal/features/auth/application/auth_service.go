@@ -80,6 +80,26 @@ func (s *AuthService) Login(
 	return tokens, nil
 }
 
+func (s *AuthService) RefreshTokens(
+	ctx context.Context,
+	refreshToken string,
+) (Tokens, error) {
+	newRefresh, newRefreshInfo, err := s.refreshTokenService.ReplaceOld(ctx, refreshToken)
+	if err != nil {
+		return Tokens{}, fmt.Errorf("refresh tokens: %w", err)
+	}
+
+	accessToken, err := s.tokenManager.Issue(newRefreshInfo.UserID)
+	if err != nil {
+		return Tokens{}, fmt.Errorf("access token issue: %w", err)
+	}
+
+	return Tokens{
+		AccessToken:  accessToken,
+		RefreshToken: newRefresh,
+	}, nil
+}
+
 func (s *AuthService) issueTokens(
 	ctx context.Context,
 	userID int64,

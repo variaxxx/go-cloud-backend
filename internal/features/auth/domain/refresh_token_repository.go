@@ -12,4 +12,15 @@ type RefreshTokenRepository interface {
 		expiresAt time.Time,
 		tokenHash string,
 	) (RefreshToken, error)
+
+	Revoke(
+		ctx context.Context,
+		tokenHash string,
+		replacedByID *int64,
+	) (RefreshToken, error)
+
+	FindByHash(
+		ctx context.Context,
+		tokenHash string,
+	) (RefreshToken, error)
 }
