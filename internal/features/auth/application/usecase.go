@@ -8,6 +8,12 @@ type AuthUseCase interface {
 		username string,
 		password string,
 	) (Tokens, error)
+
+	Login(
+		ctx context.Context,
+		username string,
+		password string,
+	) (Tokens, error)
 }
 
 type RefreshTokenUseCase interface {

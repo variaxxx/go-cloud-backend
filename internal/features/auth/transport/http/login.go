@@ -9,39 +9,39 @@ import (
 	"net/http"
 )
 
-type RegisterRequest struct {
+type LoginRequest struct {
 	Username string `json:"username" validate:"required,min=3,max=100"`
 	Password string `json:"password" validate:"required,min=6,max=100"`
 }
 
-type RegisterResponse struct {
+type LoginResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
-func (h *Handler) Register(rw http.ResponseWriter, r *http.Request) {
+func (h *Handler) Login(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
 	rh := core_http_response.NewHTTPResponseHandler(log, rw)
 
-	var request RegisterRequest
+	var request LoginRequest
 	if err := core_http_request.DecodeAndValidateRequest(r, &request); err != nil {
-		rh.ErrorResponse(err, "Request body is invalid. Username must be 3-100 chars and password at least 6 chars.")
+		rh.ErrorResponse(err, "Request body is invalid")
 		return
 	}
 
-	tokens, err := h.authService.Register(r.Context(), request.Username, request.Password)
+	tokens, err := h.authService.Login(r.Context(), request.Username, request.Password)
 	if err != nil {
-		if errors.Is(err, core_errors.ErrConflict) {
-			rh.ErrorResponse(err, "A user with this username already exists")
-			return
+		switch {
+		case errors.Is(err, core_errors.ErrNotFound), errors.Is(err, core_errors.ErrInvalidArgument):
+			rh.ErrorResponse(err, "Invalid username or password")
+		default:
+			rh.ErrorResponse(err, "Unable to sign in right now")
 		}
-
-		rh.ErrorResponse(err, "Unable to create the account right now")
 		return
 	}
 
 	h.setRefreshTokenCookie(rw, tokens.RefreshToken)
 
-	rh.JSONResponse(RegisterResponse{
+	rh.JSONResponse(LoginResponse{
 		AccessToken: tokens.AccessToken,
-	}, http.StatusCreated)
+	}, http.StatusOK)
 }

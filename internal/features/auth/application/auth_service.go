@@ -1,6 +1,7 @@
 package auth_app
 
 import (
+	core_errors "cloud/internal/core/errors"
 	auth_domain "cloud/internal/features/auth/domain"
 	user_domain "cloud/internal/features/user/domain"
 	"context"
@@ -49,19 +50,51 @@ func (s *AuthService) Register(
 		return Tokens{}, fmt.Errorf("register user: %w", err)
 	}
 
-	accessToken, err := s.tokenManager.Issue(user.ID)
+	tokens, err := s.issueTokens(ctx, user.ID)
+	if err != nil {
+		return Tokens{}, err
+	}
+
+	return tokens, nil
+}
+
+func (s *AuthService) Login(
+	ctx context.Context,
+	username string,
+	password string,
+) (Tokens, error) {
+	user, err := s.userRepository.FindByUsername(ctx, username)
+	if err != nil {
+		return Tokens{}, fmt.Errorf("find user by username: %w", err)
+	}
+
+	if err := s.hasher.Compare(user.PasswordHash, password); err != nil {
+		return Tokens{}, fmt.Errorf("%w: invalid password: %w", core_errors.ErrInvalidArgument, err)
+	}
+
+	tokens, err := s.issueTokens(ctx, user.ID)
+	if err != nil {
+		return Tokens{}, err
+	}
+
+	return tokens, nil
+}
+
+func (s *AuthService) issueTokens(
+	ctx context.Context,
+	userID int64,
+) (Tokens, error) {
+	accessToken, err := s.tokenManager.Issue(userID)
 	if err != nil {
 		return Tokens{}, fmt.Errorf("access token issue: %w", err)
 	}
-	refreshToken, err := s.refreshTokenService.Issue(ctx, user.ID)
+	refreshToken, err := s.refreshTokenService.Issue(ctx, userID)
 	if err != nil {
 		return Tokens{}, fmt.Errorf("refresh token issue: %w", err)
 	}
 
-	tokens := Tokens{
+	return Tokens{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-	}
-
-	return tokens, nil
+	}, nil
 }

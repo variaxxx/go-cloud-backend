@@ -29,5 +29,10 @@ func (h *Handler) Routes() []core_http_server.Route {
 			Path:    "/register",
 			Handler: h.Register,
 		},
+		{
+			Method:  http.MethodPost,
+			Path:    "/login",
+			Handler: h.Login,
+		},
 	}
 }

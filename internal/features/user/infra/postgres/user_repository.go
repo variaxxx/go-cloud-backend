@@ -59,3 +59,35 @@ func (r *UserRepository) Create(
 
 	return user, nil
 }
+
+func (r *UserRepository) FindByUsername(
+	ctx context.Context,
+	username string,
+) (user_domain.User, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
+	defer cancel()
+
+	const query = `
+		SELECT id, created_at, updated_at, username, password_hash
+		FROM cloud.users
+		WHERE username = $1;
+	`
+
+	var user user_domain.User
+	if err := r.pool.QueryRow(ctx, query, username).Scan(
+		&user.ID,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.Username,
+		&user.PasswordHash,
+	); err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return user_domain.User{}, fmt.Errorf("find user by username: %w", core_errors.ErrNotFound)
+		default:
+			return user_domain.User{}, fmt.Errorf("find user by username: %w", err)
+		}
+	}
+
+	return user, nil
+}

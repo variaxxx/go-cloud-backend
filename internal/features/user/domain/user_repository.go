@@ -8,4 +8,9 @@ type UserRepository interface {
 		username string,
 		passwordHash string,
 	) (User, error)
+
+	FindByUsername(
+		ctx context.Context,
+		username string,
+	) (User, error)
 }
