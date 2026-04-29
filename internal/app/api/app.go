@@ -5,6 +5,7 @@ import (
 	core_http_middleware "cloud/internal/core/transport/http/middleware"
 	core_http_server "cloud/internal/core/transport/http/server"
 	"cloud/internal/features/auth"
+	"cloud/internal/features/file"
 	"cloud/internal/features/hello"
 	infra_postgres "cloud/internal/infra/postgres"
 	"context"
@@ -56,6 +57,14 @@ func New(
 		return nil, fmt.Errorf("auth module init: %w", err)
 	}
 
+	fileRouter := core_http_server.NewAPIRouter("/files")
+	if err := file.Register(file.Deps{
+		Router: fileRouter,
+		DB:     db,
+	}); err != nil {
+		return nil, fmt.Errorf("file module init: %w", err)
+	}
+
 	middlewares := []core_http_middleware.Middleware{
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
@@ -71,6 +80,7 @@ func New(
 	httpServer.RegisterAPIRouters(
 		*apiRouter,
 		*authRouter,
+		*fileRouter,
 	)
 
 	return &App{
