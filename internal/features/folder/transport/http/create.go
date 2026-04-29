@@ -6,9 +6,9 @@ import (
 	core_http_request "cloud/internal/core/transport/http/request"
 	core_http_response "cloud/internal/core/transport/http/response"
 	auth_http "cloud/internal/features/auth/transport/http"
+	folder_app "cloud/internal/features/folder/application"
 	"errors"
 	"net/http"
-	"time"
 )
 
 type CreateRequest struct {
@@ -16,13 +16,7 @@ type CreateRequest struct {
 	ParentID *int64 `json:"parent_id"`
 }
 
-type CreateResponse struct {
-	ID        int64  `json:"id"`
-	Name      string `json:"name"`
-	ParentID  *int64 `json:"parent_id,omitempty"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
-}
+type CreateResponse = FolderDTO
 
 func (h *Handler) Create(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
@@ -40,7 +34,14 @@ func (h *Handler) Create(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdFolder, err := h.folderService.Create(r.Context(), request.Name, userID, request.ParentID)
+	createdFolder, err := h.folderService.Create(
+		r.Context(),
+		folder_app.CreateFolderParams{
+			UserID:   userID,
+			Name:     request.Name,
+			ParentID: request.ParentID,
+		},
+	)
 	if err != nil {
 		switch {
 		case errors.Is(err, core_errors.ErrNotFound):
@@ -55,11 +56,5 @@ func (h *Handler) Create(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rh.JSONResponse(CreateResponse{
-		ID:        createdFolder.ID,
-		Name:      createdFolder.Name,
-		ParentID:  createdFolder.ParentID,
-		CreatedAt: createdFolder.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: createdFolder.UpdatedAt.Format(time.RFC3339),
-	}, http.StatusCreated)
+	rh.JSONResponse(CreateResponse(NewFolderDTO(createdFolder)), http.StatusCreated)
 }

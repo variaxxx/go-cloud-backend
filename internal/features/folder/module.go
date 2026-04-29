@@ -3,6 +3,7 @@ package folder
 import (
 	core_http_server "cloud/internal/core/transport/http/server"
 	auth_jwt "cloud/internal/features/auth/infra/jwt"
+	file_postgres "cloud/internal/features/file/infra/postgres"
 	folder_app "cloud/internal/features/folder/application"
 	folder_postgres "cloud/internal/features/folder/infra/postgres"
 	folder_http "cloud/internal/features/folder/transport/http"
@@ -22,8 +23,9 @@ func Register(
 		return err
 	}
 
-	repository := folder_postgres.NewFolderRepository(deps.DB)
-	service := folder_app.NewFolderService(repository)
+	folderRepo := folder_postgres.NewFolderRepository(deps.DB)
+	fileRepo := file_postgres.NewFileRepository(deps.DB)
+	service := folder_app.NewFolderService(folderRepo, fileRepo)
 	tokenManager := auth_jwt.NewManager(jwtConfig)
 	handler := folder_http.NewHandler(service)
 

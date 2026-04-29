@@ -11,14 +11,7 @@ import (
 	"strconv"
 )
 
-type UploadResponse struct {
-	ID        int64   `json:"id"`
-	Filename  string  `json:"filename"`
-	Mimetype  *string `json:"mimetype,omitempty"`
-	Status    string  `json:"status"`
-	SizeBytes int64   `json:"size_bytes"`
-	FolderID  *int64  `json:"folder_id,omitempty"`
-}
+type UploadResponse = FileDTO
 
 func (h *Handler) Upload(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
@@ -85,12 +78,5 @@ func (h *Handler) Upload(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rh.JSONResponse(UploadResponse{
-		ID:        uploadedFile.ID,
-		Filename:  uploadedFile.Filename,
-		Mimetype:  uploadedFile.Mimetype,
-		Status:    string(uploadedFile.Status),
-		SizeBytes: uploadedFile.SizeBytes,
-		FolderID:  uploadedFile.FolderID,
-	}, http.StatusCreated)
+	rh.JSONResponse(UploadResponse(NewFileDTO(uploadedFile)), http.StatusCreated)
 }

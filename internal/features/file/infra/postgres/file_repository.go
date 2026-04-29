@@ -77,3 +77,68 @@ func (r *FileRepository) Create(
 
 	return file, nil
 }
+
+func (r *FileRepository) FindByFolderIDAndUserID(
+	ctx context.Context,
+	folderID *int64,
+	userID int64,
+) ([]file_domain.File, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
+	defer cancel()
+
+	query := `
+		SELECT id, created_at, updated_at, deleted_at, filename, mimetype, status, storage_path, size_bytes, user_id, folder_id
+		FROM cloud.files
+		WHERE user_id = $1 AND deleted_at IS NULL
+	`
+	args := []any{userID}
+
+	if folderID == nil {
+		query += ` AND folder_id IS NULL`
+	} else {
+		query += ` AND folder_id = $2`
+		args = append(args, *folderID)
+	}
+
+	query += ` ORDER BY filename`
+
+	rows, err := r.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("find files by folder id and user id: %w", err)
+	}
+	defer rows.Close()
+
+	files := make([]file_domain.File, 0)
+	for rows.Next() {
+		var file file_domain.File
+		var deletedAt *time.Time
+		var dbMimetype *string
+		var dbFolderID *int64
+		if err := rows.Scan(
+			&file.ID,
+			&file.CreatedAt,
+			&file.UpdatedAt,
+			&deletedAt,
+			&file.Filename,
+			&dbMimetype,
+			&file.Status,
+			&file.StoragePath,
+			&file.SizeBytes,
+			&file.UserID,
+			&dbFolderID,
+		); err != nil {
+			return nil, fmt.Errorf("scan file row: %w", err)
+		}
+
+		file.DeletedAt = deletedAt
+		file.Mimetype = dbMimetype
+		file.FolderID = dbFolderID
+		files = append(files, file)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate file rows: %w", err)
+	}
+
+	return files, nil
+}

@@ -15,4 +15,16 @@ type FolderRepository interface {
 		id int64,
 		userID int64,
 	) (Folder, error)
+
+	FindByIDAndUserIDWithPath(
+		ctx context.Context,
+		id int64,
+		userID int64,
+	) (Folder, []string, error)
+
+	FindByParentIDAndUserID(
+		ctx context.Context,
+		parentID *int64,
+		userID int64,
+	) ([]Folder, error)
 }

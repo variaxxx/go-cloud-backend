@@ -101,3 +101,117 @@ func (r *FolderRepository) FindByIDAndUserID(
 
 	return folder, nil
 }
+
+func (r *FolderRepository) FindByIDAndUserIDWithPath(
+	ctx context.Context,
+	id int64,
+	userID int64,
+) (folder_domain.Folder, []string, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
+	defer cancel()
+
+	const query = `
+		WITH RECURSIVE ancestry AS (
+			SELECT id, created_at, updated_at, name, user_id, parent_id, 0 AS depth
+			FROM cloud.folders
+			WHERE id = $1 AND user_id = $2
+
+			UNION ALL
+
+			SELECT f.id, f.created_at, f.updated_at, f.name, f.user_id, f.parent_id, a.depth + 1
+			FROM cloud.folders f
+			JOIN ancestry a ON a.parent_id = f.id
+			WHERE f.user_id = $2
+		)
+		SELECT
+			cur.id,
+			cur.created_at,
+			cur.updated_at,
+			cur.name,
+			cur.user_id,
+			cur.parent_id,
+			(SELECT ARRAY_AGG(name ORDER BY depth DESC) FROM ancestry) AS path
+		FROM ancestry cur
+		WHERE cur.depth = 0;
+	`
+
+	var folder folder_domain.Folder
+	var dbParentID *int64
+	var path []string
+	if err := r.pool.QueryRow(ctx, query, id, userID).Scan(
+		&folder.ID,
+		&folder.CreatedAt,
+		&folder.UpdatedAt,
+		&folder.Name,
+		&folder.UserID,
+		&dbParentID,
+		&path,
+	); err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return folder_domain.Folder{}, nil, fmt.Errorf("find folder by id and user id with path: %w", core_errors.ErrNotFound)
+		default:
+			return folder_domain.Folder{}, nil, fmt.Errorf("find folder by id and user id with path: %w", err)
+		}
+	}
+
+	folder.ParentID = dbParentID
+
+	return folder, path, nil
+}
+
+func (r *FolderRepository) FindByParentIDAndUserID(
+	ctx context.Context,
+	parentID *int64,
+	userID int64,
+) ([]folder_domain.Folder, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
+	defer cancel()
+
+	query := `
+		SELECT id, created_at, updated_at, name, user_id, parent_id
+		FROM cloud.folders
+		WHERE user_id = $1
+	`
+	args := []any{userID}
+
+	if parentID == nil {
+		query += ` AND parent_id IS NULL`
+	} else {
+		query += ` AND parent_id = $2`
+		args = append(args, *parentID)
+	}
+
+	query += ` ORDER BY name`
+
+	rows, err := r.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("find folders by parent id and user id: %w", err)
+	}
+	defer rows.Close()
+
+	folders := make([]folder_domain.Folder, 0)
+	for rows.Next() {
+		var folder folder_domain.Folder
+		var dbParentID *int64
+		if err := rows.Scan(
+			&folder.ID,
+			&folder.CreatedAt,
+			&folder.UpdatedAt,
+			&folder.Name,
+			&folder.UserID,
+			&dbParentID,
+		); err != nil {
+			return nil, fmt.Errorf("scan folder row: %w", err)
+		}
+
+		folder.ParentID = dbParentID
+		folders = append(folders, folder)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate folder rows: %w", err)
+	}
+
+	return folders, nil
+}

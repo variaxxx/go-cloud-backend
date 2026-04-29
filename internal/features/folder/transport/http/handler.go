@@ -26,6 +26,22 @@ func (h *Handler) Routes(
 ) []core_http_server.Route {
 	return []core_http_server.Route{
 		{
+			Method:  http.MethodGet,
+			Path:    "/content",
+			Handler: h.GetContent,
+			Middlewares: []core_http_middleware.Middleware{
+				auth_http.Auth(tokenManager),
+			},
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/{id}/content",
+			Handler: h.GetContent,
+			Middlewares: []core_http_middleware.Middleware{
+				auth_http.Auth(tokenManager),
+			},
+		},
+		{
 			Method:  http.MethodPost,
 			Path:    "/",
 			Handler: h.Create,

@@ -13,4 +13,10 @@ type FileRepository interface {
 		userID int64,
 		folderID *int64,
 	) (File, error)
+
+	FindByFolderIDAndUserID(
+		ctx context.Context,
+		folderID *int64,
+		userID int64,
+	) ([]File, error)
 }
