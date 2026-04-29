@@ -49,5 +49,13 @@ func (h *Handler) Routes(
 				auth_http.Auth(tokenManager),
 			},
 		},
+		{
+			Method:  http.MethodPatch,
+			Path:    "/{id}",
+			Handler: h.Edit,
+			Middlewares: []core_http_middleware.Middleware{
+				auth_http.Auth(tokenManager),
+			},
+		},
 	}
 }

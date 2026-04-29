@@ -65,6 +65,51 @@ func (r *FolderRepository) Create(
 	return folder, nil
 }
 
+func (r *FolderRepository) Update(
+	ctx context.Context,
+	id int64,
+	userID int64,
+	name string,
+	parentID *int64,
+) (folder_domain.Folder, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
+	defer cancel()
+
+	const query = `
+		UPDATE cloud.folders
+		SET name = $3, parent_id = $4, updated_at = NOW()
+		WHERE id = $1 AND user_id = $2
+		RETURNING id, created_at, updated_at, name, user_id, parent_id;
+	`
+
+	var folder folder_domain.Folder
+	var dbParentID *int64
+	if err := r.pool.QueryRow(ctx, query, id, userID, name, parentID).Scan(
+		&folder.ID,
+		&folder.CreatedAt,
+		&folder.UpdatedAt,
+		&folder.Name,
+		&folder.UserID,
+		&dbParentID,
+	); err != nil {
+		var pgErr *pgconn.PgError
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return folder_domain.Folder{}, fmt.Errorf("update folder: %w", core_errors.ErrNotFound)
+		case errors.As(err, &pgErr) && pgErr.Code == "23505":
+			return folder_domain.Folder{}, fmt.Errorf("update folder: %w", core_errors.ErrConflict)
+		case errors.As(err, &pgErr) && pgErr.Code == "23503":
+			return folder_domain.Folder{}, fmt.Errorf("update folder: %w", core_errors.ErrInvalidArgument)
+		default:
+			return folder_domain.Folder{}, fmt.Errorf("update folder: %w", err)
+		}
+	}
+
+	folder.ParentID = dbParentID
+
+	return folder, nil
+}
+
 func (r *FolderRepository) FindByIDAndUserID(
 	ctx context.Context,
 	id int64,
@@ -214,4 +259,41 @@ func (r *FolderRepository) FindByParentIDAndUserID(
 	}
 
 	return folders, nil
+}
+
+func (r *FolderRepository) WouldCreateCycle(
+	ctx context.Context,
+	id int64,
+	parentID int64,
+	userID int64,
+) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
+	defer cancel()
+
+	const query = `
+		WITH RECURSIVE ancestry AS (
+			SELECT id, parent_id
+			FROM cloud.folders
+			WHERE id = $1 AND user_id = $3
+
+			UNION ALL
+
+			SELECT f.id, f.parent_id
+			FROM cloud.folders f
+			JOIN ancestry a ON a.parent_id = f.id
+			WHERE f.user_id = $3
+		)
+		SELECT EXISTS(
+			SELECT 1
+			FROM ancestry
+			WHERE id = $2
+		);
+	`
+
+	var wouldCreateCycle bool
+	if err := r.pool.QueryRow(ctx, query, parentID, id, userID).Scan(&wouldCreateCycle); err != nil {
+		return false, fmt.Errorf("check folder cycle: %w", err)
+	}
+
+	return wouldCreateCycle, nil
 }

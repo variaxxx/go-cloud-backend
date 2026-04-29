@@ -12,6 +12,14 @@ type CreateFolderParams struct {
 	ParentID *int64
 }
 
+type EditFolderParams struct {
+	ID               int64
+	UserID           int64
+	Name             *string
+	ParentID         *int64
+	IsParentIDUpdate bool
+}
+
 type GetFolderContentParams struct {
 	UserID   int64
 	FolderID *int64
@@ -28,6 +36,11 @@ type FolderUseCase interface {
 	Create(
 		ctx context.Context,
 		params CreateFolderParams,
+	) (folder_domain.Folder, error)
+
+	Edit(
+		ctx context.Context,
+		params EditFolderParams,
 	) (folder_domain.Folder, error)
 
 	GetContent(

@@ -6,6 +6,7 @@ import (
 	folder_domain "cloud/internal/features/folder/domain"
 	"context"
 	"fmt"
+	"strings"
 )
 
 type FolderService struct {
@@ -37,6 +38,61 @@ func (s *FolderService) Create(
 	}
 
 	return folder, nil
+}
+
+func (s *FolderService) Edit(
+	ctx context.Context,
+	params EditFolderParams,
+) (folder_domain.Folder, error) {
+	if params.Name == nil && !params.IsParentIDUpdate {
+		return folder_domain.Folder{}, fmt.Errorf("edit folder: %w", core_errors.ErrInvalidArgument)
+	}
+
+	currentFolder, err := s.folderRepo.FindByIDAndUserID(ctx, params.ID, params.UserID)
+	if err != nil {
+		return folder_domain.Folder{}, fmt.Errorf("find current folder: %w", err)
+	}
+
+	name := currentFolder.Name
+	if params.Name != nil {
+		trimmedName := strings.TrimSpace(*params.Name)
+		if trimmedName == "" {
+			return folder_domain.Folder{}, fmt.Errorf("edit folder: %w", core_errors.ErrInvalidArgument)
+		}
+
+		name = trimmedName
+	}
+
+	parentID := currentFolder.ParentID
+	if params.IsParentIDUpdate {
+		parentID = params.ParentID
+	}
+
+	if parentID != nil {
+		if *parentID == currentFolder.ID {
+			return folder_domain.Folder{}, fmt.Errorf("edit folder: %w", core_errors.ErrInvalidArgument)
+		}
+
+		if _, err := s.folderRepo.FindByIDAndUserID(ctx, *parentID, params.UserID); err != nil {
+			return folder_domain.Folder{}, fmt.Errorf("find parent folder: %w", err)
+		}
+
+		wouldCreateCycle, err := s.folderRepo.WouldCreateCycle(ctx, currentFolder.ID, *parentID, params.UserID)
+		if err != nil {
+			return folder_domain.Folder{}, fmt.Errorf("check folder cycle: %w", err)
+		}
+
+		if wouldCreateCycle {
+			return folder_domain.Folder{}, fmt.Errorf("edit folder: %w", core_errors.ErrInvalidArgument)
+		}
+	}
+
+	updatedFolder, err := s.folderRepo.Update(ctx, currentFolder.ID, params.UserID, name, parentID)
+	if err != nil {
+		return folder_domain.Folder{}, fmt.Errorf("update folder: %w", err)
+	}
+
+	return updatedFolder, nil
 }
 
 func (s *FolderService) GetContent(

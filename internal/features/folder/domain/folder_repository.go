@@ -10,6 +10,14 @@ type FolderRepository interface {
 		parentID *int64,
 	) (Folder, error)
 
+	Update(
+		ctx context.Context,
+		id int64,
+		userID int64,
+		name string,
+		parentID *int64,
+	) (Folder, error)
+
 	FindByIDAndUserID(
 		ctx context.Context,
 		id int64,
@@ -27,4 +35,11 @@ type FolderRepository interface {
 		parentID *int64,
 		userID int64,
 	) ([]Folder, error)
+
+	WouldCreateCycle(
+		ctx context.Context,
+		id int64,
+		parentID int64,
+		userID int64,
+	) (bool, error)
 }
