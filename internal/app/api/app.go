@@ -6,6 +6,7 @@ import (
 	core_http_server "cloud/internal/core/transport/http/server"
 	"cloud/internal/features/auth"
 	"cloud/internal/features/file"
+	"cloud/internal/features/folder"
 	"cloud/internal/features/hello"
 	infra_postgres "cloud/internal/infra/postgres"
 	"context"
@@ -65,6 +66,14 @@ func New(
 		return nil, fmt.Errorf("file module init: %w", err)
 	}
 
+	folderRouter := core_http_server.NewAPIRouter("/folders")
+	if err := folder.Register(folder.Deps{
+		Router: folderRouter,
+		DB:     db,
+	}); err != nil {
+		return nil, fmt.Errorf("folder module init: %w", err)
+	}
+
 	middlewares := []core_http_middleware.Middleware{
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
@@ -81,6 +90,7 @@ func New(
 		*apiRouter,
 		*authRouter,
 		*fileRouter,
+		*folderRouter,
 	)
 
 	return &App{

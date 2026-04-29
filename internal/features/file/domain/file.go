@@ -21,4 +21,5 @@ type File struct {
 	StoragePath string
 	SizeBytes   int64
 	UserID      int64
+	FolderID    *int64
 }

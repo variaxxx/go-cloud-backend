@@ -32,7 +32,7 @@ func (h *Handler) Login(rw http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, core_errors.ErrNotFound), errors.Is(err, core_errors.ErrInvalidArgument):
-			rh.ErrorResponse(err, "Invalid username or password")
+			rh.ErrorResponse(core_errors.ErrUnauthorized, "Invalid username or password")
 		default:
 			rh.ErrorResponse(err, "Unable to sign in right now")
 		}

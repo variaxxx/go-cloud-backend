@@ -11,5 +11,6 @@ type FileRepository interface {
 		storagePath string,
 		sizeBytes int64,
 		userID int64,
+		folderID *int64,
 	) (File, error)
 }

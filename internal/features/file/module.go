@@ -7,6 +7,7 @@ import (
 	file_postgres "cloud/internal/features/file/infra/postgres"
 	file_storage "cloud/internal/features/file/infra/storage"
 	file_http "cloud/internal/features/file/transport/http"
+	folder_postgres "cloud/internal/features/folder/infra/postgres"
 	infra_postgres "cloud/internal/infra/postgres"
 )
 
@@ -29,10 +30,11 @@ func Register(
 	}
 
 	fileRepo := file_postgres.NewFileRepository(deps.DB)
+	folderRepo := folder_postgres.NewFolderRepository(deps.DB)
 	storage := file_storage.NewLocalFileStorage(config.StorageDir)
 	tokenManager := auth_jwt.NewManager(jwtConfig)
 
-	service := file_app.NewFileService(fileRepo, storage)
+	service := file_app.NewFileService(fileRepo, storage, folderRepo)
 
 	handler := file_http.NewHandler(service)
 

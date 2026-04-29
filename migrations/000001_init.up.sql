@@ -11,6 +11,19 @@ CREATE TABLE cloud.users (
   password_hash TEXT NOT NULL
 );
 
+CREATE TABLE cloud.folders (
+  id BIGSERIAL PRIMARY KEY,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  name VARCHAR(255) NOT NULL,
+  user_id BIGINT NOT NULL REFERENCES cloud.users(id) ON DELETE CASCADE,
+  parent_id BIGINT REFERENCES cloud.folders(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX uq_folders_user_parent_name
+ON cloud.folders (user_id, COALESCE(parent_id, 0), name);
+
 CREATE TABLE cloud.files (
   id BIGSERIAL PRIMARY KEY,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -23,10 +36,14 @@ CREATE TABLE cloud.files (
   storage_path TEXT NOT NULL,
   size_bytes BIGINT NOT NULL CHECK (size_bytes >= 0),
 
-  user_id BIGINT NOT NULL REFERENCES cloud.users(id) ON DELETE CASCADE
+  user_id BIGINT NOT NULL REFERENCES cloud.users(id) ON DELETE CASCADE,
+  folder_id BIGINT REFERENCES cloud.folders(id) ON DELETE SET NULL
 );
 
 CREATE INDEX idx_files_user_status ON cloud.files(user_id, status);
+CREATE UNIQUE INDEX uq_files_user_folder_filename
+ON cloud.files (user_id, COALESCE(folder_id, 0), filename)
+WHERE deleted_at IS NULL;
 
 CREATE TABLE cloud.refresh_tokens (
   id BIGSERIAL PRIMARY KEY,
