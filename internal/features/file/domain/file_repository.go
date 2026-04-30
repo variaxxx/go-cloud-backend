@@ -1,6 +1,10 @@
 package file_domain
 
-import "context"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 type FileRepository interface {
 	Create(
@@ -11,12 +15,12 @@ type FileRepository interface {
 		storagePath string,
 		sizeBytes int64,
 		userID int64,
-		folderID *int64,
+		folderID *uuid.UUID,
 	) (File, error)
 
 	FindByFolderIDAndUserID(
 		ctx context.Context,
-		folderID *int64,
+		folderID *uuid.UUID,
 		userID int64,
 	) ([]File, error)
 }

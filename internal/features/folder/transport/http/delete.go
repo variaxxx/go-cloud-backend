@@ -20,7 +20,7 @@ func (h *Handler) Delete(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	folderID, err := core_http_utils.GetIntPathValue(r, "id")
+	folderID, err := core_http_utils.GetUUIDPathValue(r, "id")
 	if err != nil {
 		rh.ErrorResponse(err, "Invalid folder ID")
 		return

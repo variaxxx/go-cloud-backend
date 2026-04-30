@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -28,7 +29,7 @@ func (r *FolderRepository) Create(
 	ctx context.Context,
 	name string,
 	userID int64,
-	parentID *int64,
+	parentID *uuid.UUID,
 ) (folder_domain.Folder, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
 	defer cancel()
@@ -40,7 +41,7 @@ func (r *FolderRepository) Create(
 	`
 
 	var folder folder_domain.Folder
-	var dbParentID *int64
+	var dbParentID *uuid.UUID
 	if err := r.pool.QueryRow(ctx, query, name, userID, parentID).Scan(
 		&folder.ID,
 		&folder.CreatedAt,
@@ -67,10 +68,10 @@ func (r *FolderRepository) Create(
 
 func (r *FolderRepository) Update(
 	ctx context.Context,
-	id int64,
+	id uuid.UUID,
 	userID int64,
 	name string,
-	parentID *int64,
+	parentID *uuid.UUID,
 ) (folder_domain.Folder, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
 	defer cancel()
@@ -83,7 +84,7 @@ func (r *FolderRepository) Update(
 	`
 
 	var folder folder_domain.Folder
-	var dbParentID *int64
+	var dbParentID *uuid.UUID
 	if err := r.pool.QueryRow(ctx, query, id, userID, name, parentID).Scan(
 		&folder.ID,
 		&folder.CreatedAt,
@@ -112,7 +113,7 @@ func (r *FolderRepository) Update(
 
 func (r *FolderRepository) FindByIDAndUserID(
 	ctx context.Context,
-	id int64,
+	id uuid.UUID,
 	userID int64,
 ) (folder_domain.Folder, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
@@ -125,7 +126,7 @@ func (r *FolderRepository) FindByIDAndUserID(
 	`
 
 	var folder folder_domain.Folder
-	var dbParentID *int64
+	var dbParentID *uuid.UUID
 	if err := r.pool.QueryRow(ctx, query, id, userID).Scan(
 		&folder.ID,
 		&folder.CreatedAt,
@@ -149,7 +150,7 @@ func (r *FolderRepository) FindByIDAndUserID(
 
 func (r *FolderRepository) FindByIDAndUserIDWithPath(
 	ctx context.Context,
-	id int64,
+	id uuid.UUID,
 	userID int64,
 ) (folder_domain.Folder, []string, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
@@ -181,7 +182,7 @@ func (r *FolderRepository) FindByIDAndUserIDWithPath(
 	`
 
 	var folder folder_domain.Folder
-	var dbParentID *int64
+	var dbParentID *uuid.UUID
 	var path []string
 	if err := r.pool.QueryRow(ctx, query, id, userID).Scan(
 		&folder.ID,
@@ -207,7 +208,7 @@ func (r *FolderRepository) FindByIDAndUserIDWithPath(
 
 func (r *FolderRepository) FindByParentIDAndUserID(
 	ctx context.Context,
-	parentID *int64,
+	parentID *uuid.UUID,
 	userID int64,
 ) ([]folder_domain.Folder, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
@@ -238,7 +239,7 @@ func (r *FolderRepository) FindByParentIDAndUserID(
 	folders := make([]folder_domain.Folder, 0)
 	for rows.Next() {
 		var folder folder_domain.Folder
-		var dbParentID *int64
+		var dbParentID *uuid.UUID
 		if err := rows.Scan(
 			&folder.ID,
 			&folder.CreatedAt,
@@ -263,8 +264,8 @@ func (r *FolderRepository) FindByParentIDAndUserID(
 
 func (r *FolderRepository) WouldCreateCycle(
 	ctx context.Context,
-	id int64,
-	parentID int64,
+	id uuid.UUID,
+	parentID uuid.UUID,
 	userID int64,
 ) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
@@ -300,7 +301,7 @@ func (r *FolderRepository) WouldCreateCycle(
 
 func (r *FolderRepository) Delete(
 	ctx context.Context,
-	id int64,
+	id uuid.UUID,
 ) error {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
 	defer cancel()

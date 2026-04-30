@@ -8,7 +8,8 @@ import (
 	folder_app "cloud/internal/features/folder/application"
 	"errors"
 	"net/http"
-	"strconv"
+
+	"github.com/google/uuid"
 )
 
 type GetContentResponse struct {
@@ -28,11 +29,11 @@ func (h *Handler) GetContent(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var folderID *int64
+	var folderID *uuid.UUID
 	if value := r.PathValue("id"); value != "" {
-		parsedFolderID, err := strconv.ParseInt(value, 10, 64)
-		if err != nil || parsedFolderID <= 0 {
-			rh.ErrorResponse(core_errors.ErrInvalidArgument, "Folder id must be a positive integer")
+		parsedFolderID, err := uuid.Parse(value)
+		if err != nil {
+			rh.ErrorResponse(core_errors.ErrInvalidArgument, "Folder id must be a valid UUID")
 			return
 		}
 

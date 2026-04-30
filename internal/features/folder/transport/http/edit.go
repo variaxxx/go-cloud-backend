@@ -11,14 +11,16 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
-type NullableInt64Field struct {
+type NullableUUIDField struct {
 	Present bool
-	Value   *int64
+	Value   *uuid.UUID
 }
 
-func (f *NullableInt64Field) UnmarshalJSON(data []byte) error {
+func (f *NullableUUIDField) UnmarshalJSON(data []byte) error {
 	f.Present = true
 
 	if string(data) == "null" {
@@ -26,7 +28,7 @@ func (f *NullableInt64Field) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	var value int64
+	var value uuid.UUID
 	if err := json.Unmarshal(data, &value); err != nil {
 		return err
 	}
@@ -36,14 +38,14 @@ func (f *NullableInt64Field) UnmarshalJSON(data []byte) error {
 }
 
 type EditRequest struct {
-	Name     *string            `json:"name" validate:"omitempty,min=1,max=255"`
-	ParentID NullableInt64Field `json:"parent_id"`
+	Name     *string           `json:"name" validate:"omitempty,min=1,max=255"`
+	ParentID NullableUUIDField `json:"parent_id"`
 }
 
 type EditResponse = FolderDTO
 
 func (r EditRequest) ToEditFolderParams(
-	folderID int64,
+	folderID uuid.UUID,
 	userID int64,
 ) (folder_app.EditFolderParams, error) {
 	params := folder_app.EditFolderParams{
@@ -57,10 +59,6 @@ func (r EditRequest) ToEditFolderParams(
 	}
 
 	params.IsParentIDUpdate = true
-
-	if r.ParentID.Value != nil && *r.ParentID.Value <= 0 {
-		return folder_app.EditFolderParams{}, core_errors.ErrInvalidArgument
-	}
 
 	params.ParentID = r.ParentID.Value
 
@@ -77,7 +75,7 @@ func (h *Handler) Edit(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	folderID, err := core_http_utils.GetIntPathValue(r, "id")
+	folderID, err := core_http_utils.GetUUIDPathValue(r, "id")
 	if err != nil {
 		rh.ErrorResponse(err, "Invalid folder ID")
 		return

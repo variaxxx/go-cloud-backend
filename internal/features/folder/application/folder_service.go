@@ -7,6 +7,8 @@ import (
 	"context"
 	"fmt"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type FolderService struct {
@@ -104,7 +106,7 @@ func (s *FolderService) Edit(
 
 func (s *FolderService) Delete(
 	ctx context.Context,
-	id int64,
+	id uuid.UUID,
 	userID int64,
 ) error {
 	if _, err := s.folderRepo.FindByIDAndUserID(ctx, id, userID); err != nil {

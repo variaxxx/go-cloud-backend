@@ -1,6 +1,10 @@
 package file_domain
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type FileStatus string
 
@@ -11,7 +15,7 @@ const (
 )
 
 type File struct {
-	ID          int64
+	ID          uuid.UUID
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   *time.Time
@@ -21,5 +25,5 @@ type File struct {
 	StoragePath string
 	SizeBytes   int64
 	UserID      int64
-	FolderID    *int64
+	FolderID    *uuid.UUID
 }

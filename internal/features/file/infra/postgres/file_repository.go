@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -32,7 +33,7 @@ func (r *FileRepository) Create(
 	storagePath string,
 	sizeBytes int64,
 	userID int64,
-	folderID *int64,
+	folderID *uuid.UUID,
 ) (file_domain.File, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
 	defer cancel()
@@ -46,7 +47,7 @@ func (r *FileRepository) Create(
 	var file file_domain.File
 	var deletedAt *time.Time
 	var dbMimetype *string
-	var dbFolderID *int64
+	var dbFolderID *uuid.UUID
 	if err := r.pool.QueryRow(ctx, query, filename, mimetype, status, storagePath, sizeBytes, userID, folderID).Scan(
 		&file.ID,
 		&file.CreatedAt,
@@ -80,7 +81,7 @@ func (r *FileRepository) Create(
 
 func (r *FileRepository) FindByFolderIDAndUserID(
 	ctx context.Context,
-	folderID *int64,
+	folderID *uuid.UUID,
 	userID int64,
 ) ([]file_domain.File, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
@@ -113,7 +114,7 @@ func (r *FileRepository) FindByFolderIDAndUserID(
 		var file file_domain.File
 		var deletedAt *time.Time
 		var dbMimetype *string
-		var dbFolderID *int64
+		var dbFolderID *uuid.UUID
 		if err := rows.Scan(
 			&file.ID,
 			&file.CreatedAt,

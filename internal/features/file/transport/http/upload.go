@@ -8,7 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
+
+	"github.com/google/uuid"
 )
 
 type UploadResponse = FileDTO
@@ -32,11 +33,11 @@ func (h *Handler) Upload(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var folderID *int64
+	var folderID *uuid.UUID
 	if value := r.FormValue("folder_id"); value != "" {
-		parsedFolderID, err := strconv.ParseInt(value, 10, 64)
-		if err != nil || parsedFolderID <= 0 {
-			rh.ErrorResponse(core_errors.ErrInvalidArgument, "folder_id must be a positive integer")
+		parsedFolderID, err := uuid.Parse(value)
+		if err != nil {
+			rh.ErrorResponse(core_errors.ErrInvalidArgument, "folder_id must be a valid UUID")
 			return
 		}
 

@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 CREATE SCHEMA cloud;
 
 CREATE TYPE cloud.file_status AS ENUM ('uploaded', 'processed', 'failed');
@@ -12,20 +14,20 @@ CREATE TABLE cloud.users (
 );
 
 CREATE TABLE cloud.folders (
-  id BIGSERIAL PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   name VARCHAR(255) NOT NULL,
   user_id BIGINT NOT NULL REFERENCES cloud.users(id) ON DELETE CASCADE,
-  parent_id BIGINT REFERENCES cloud.folders(id) ON DELETE CASCADE
+  parent_id UUID REFERENCES cloud.folders(id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX uq_folders_user_parent_name
-ON cloud.folders (user_id, COALESCE(parent_id, 0), name);
+ON cloud.folders (user_id, COALESCE(parent_id, '00000000-0000-0000-0000-000000000000'::uuid), name);
 
 CREATE TABLE cloud.files (
-  id BIGSERIAL PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   deleted_at TIMESTAMPTZ,
@@ -37,12 +39,12 @@ CREATE TABLE cloud.files (
   size_bytes BIGINT NOT NULL CHECK (size_bytes >= 0),
 
   user_id BIGINT NOT NULL REFERENCES cloud.users(id) ON DELETE CASCADE,
-  folder_id BIGINT REFERENCES cloud.folders(id) ON DELETE CASCADE
+  folder_id UUID REFERENCES cloud.folders(id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_files_user_status ON cloud.files(user_id, status);
 CREATE UNIQUE INDEX uq_files_user_folder_filename
-ON cloud.files (user_id, COALESCE(folder_id, 0), filename)
+ON cloud.files (user_id, COALESCE(folder_id, '00000000-0000-0000-0000-000000000000'::uuid), filename)
 WHERE deleted_at IS NULL;
 
 CREATE TABLE cloud.refresh_tokens (

@@ -4,23 +4,24 @@ import (
 	core_errors "cloud/internal/core/errors"
 	"fmt"
 	"net/http"
-	"strconv"
+
+	"github.com/google/uuid"
 )
 
-func GetIntPathValue(r *http.Request, key string) (int64, error) {
+func GetUUIDPathValue(r *http.Request, key string) (uuid.UUID, error) {
 	pathValue := r.PathValue(key)
 	if pathValue == "" {
-		return 0, fmt.Errorf(
+		return uuid.Nil, fmt.Errorf(
 			"%w: no key='%s' in path values",
 			core_errors.ErrInvalidArgument,
 			key,
 		)
 	}
 
-	val, err := strconv.ParseInt(pathValue, 10, 64)
+	val, err := uuid.Parse(pathValue)
 	if err != nil {
-		return 0, fmt.Errorf(
-			"%w: path value='%s' by key='%s' is not a valid integer: %v",
+		return uuid.Nil, fmt.Errorf(
+			"%w: path value='%s' by key='%s' is not a valid UUID: %v",
 			core_errors.ErrInvalidArgument, pathValue, key, err,
 		)
 	}

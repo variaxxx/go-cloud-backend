@@ -4,14 +4,16 @@ import (
 	file_domain "cloud/internal/features/file/domain"
 	folder_domain "cloud/internal/features/folder/domain"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type FolderDTO struct {
-	ID        int64  `json:"id"`
-	Name      string `json:"name"`
-	ParentID  *int64 `json:"parent_id,omitempty"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	ID        uuid.UUID  `json:"id"`
+	Name      string     `json:"name"`
+	ParentID  *uuid.UUID `json:"parent_id,omitempty"`
+	CreatedAt string     `json:"created_at"`
+	UpdatedAt string     `json:"updated_at"`
 }
 
 func NewFolderDTO(folder folder_domain.Folder) FolderDTO {
@@ -34,13 +36,13 @@ func NewFolderDTOs(folders []folder_domain.Folder) []FolderDTO {
 }
 
 type FileDTOView struct {
-	ID        int64   `json:"id"`
-	Filename  string  `json:"filename"`
-	Mimetype  *string `json:"mimetype,omitempty"`
-	Status    string  `json:"status"`
-	SizeBytes int64   `json:"size_bytes"`
-	CreatedAt string  `json:"created_at"`
-	UpdatedAt string  `json:"updated_at"`
+	ID        uuid.UUID `json:"id"`
+	Filename  string    `json:"filename"`
+	Mimetype  *string   `json:"mimetype,omitempty"`
+	Status    string    `json:"status"`
+	SizeBytes int64     `json:"size_bytes"`
+	CreatedAt string    `json:"created_at"`
+	UpdatedAt string    `json:"updated_at"`
 }
 
 func NewFileDTOView(file file_domain.File) FileDTOView {

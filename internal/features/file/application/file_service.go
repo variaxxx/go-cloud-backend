@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type FileService struct {
@@ -34,7 +36,7 @@ func (s *FileService) Upload(
 	mimetype *string,
 	sizeBytes int64,
 	userID int64,
-	folderID *int64,
+	folderID *uuid.UUID,
 	file io.Reader,
 ) (file_domain.File, error) {
 	filename = strings.TrimSpace(filename)

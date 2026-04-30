@@ -9,11 +9,13 @@ import (
 	folder_app "cloud/internal/features/folder/application"
 	"errors"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 type CreateRequest struct {
-	Name     string `json:"name" validate:"required,min=1,max=255"`
-	ParentID *int64 `json:"parent_id"`
+	Name     string     `json:"name" validate:"required,min=1,max=255"`
+	ParentID *uuid.UUID `json:"parent_id"`
 }
 
 type CreateResponse = FolderDTO

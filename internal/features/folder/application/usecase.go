@@ -4,25 +4,27 @@ import (
 	file_domain "cloud/internal/features/file/domain"
 	folder_domain "cloud/internal/features/folder/domain"
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type CreateFolderParams struct {
 	Name     string
 	UserID   int64
-	ParentID *int64
+	ParentID *uuid.UUID
 }
 
 type EditFolderParams struct {
-	ID               int64
+	ID               uuid.UUID
 	UserID           int64
 	Name             *string
-	ParentID         *int64
+	ParentID         *uuid.UUID
 	IsParentIDUpdate bool
 }
 
 type GetFolderContentParams struct {
 	UserID   int64
-	FolderID *int64
+	FolderID *uuid.UUID
 }
 
 type FolderContent struct {
@@ -45,7 +47,7 @@ type FolderUseCase interface {
 
 	Delete(
 		ctx context.Context,
-		id int64,
+		id uuid.UUID,
 		userID int64,
 	) error
 

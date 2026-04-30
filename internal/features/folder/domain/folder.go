@@ -1,12 +1,16 @@
 package folder_domain
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Folder struct {
-	ID        int64
+	ID        uuid.UUID
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Name      string
 	UserID    int64
-	ParentID  *int64
+	ParentID  *uuid.UUID
 }
