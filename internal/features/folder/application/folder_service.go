@@ -122,13 +122,14 @@ func (s *FolderService) Delete(
 
 func (s *FolderService) GetContent(
 	ctx context.Context,
-	params GetFolderContentParams,
+	userID int64,
+	folderID *uuid.UUID,
 ) (FolderContent, error) {
 	var folderName *string
 	folderPath := make([]string, 0)
 
-	if params.FolderID != nil {
-		folder, path, err := s.folderRepo.FindByIDAndUserIDWithPath(ctx, *params.FolderID, params.UserID)
+	if folderID != nil {
+		folder, path, err := s.folderRepo.FindByIDAndUserIDWithPath(ctx, *folderID, userID)
 		if err != nil {
 			return FolderContent{}, fmt.Errorf("get folder info: %w", err)
 		}
@@ -137,12 +138,12 @@ func (s *FolderService) GetContent(
 		folderPath = path
 	}
 
-	nestedFolders, err := s.folderRepo.FindByParentIDAndUserID(ctx, params.FolderID, params.UserID)
+	nestedFolders, err := s.folderRepo.FindByParentIDAndUserID(ctx, folderID, userID)
 	if err != nil {
 		return FolderContent{}, fmt.Errorf("get nested folders: %w", err)
 	}
 
-	files, err := s.fileRepo.FindByFolderIDAndUserID(ctx, params.FolderID, params.UserID)
+	files, err := s.fileRepo.FindByFolderIDAndUserID(ctx, folderID, userID)
 	if err != nil {
 		return FolderContent{}, fmt.Errorf("get files: %w", err)
 	}

@@ -5,6 +5,7 @@ import (
 	core_logger "cloud/internal/core/logger"
 	core_http_auth "cloud/internal/core/transport/http/auth"
 	core_http_response "cloud/internal/core/transport/http/response"
+	file_app "cloud/internal/features/file/application"
 	"errors"
 	"fmt"
 	"net/http"
@@ -58,12 +59,14 @@ func (h *Handler) Upload(rw http.ResponseWriter, r *http.Request) {
 
 	uploadedFile, err := h.fileService.Upload(
 		r.Context(),
-		header.Filename,
-		mimetype,
-		header.Size,
-		userID,
-		folderID,
-		file,
+		file_app.UploadFileParams{
+			Filename:  header.Filename,
+			Mimetype:  mimetype,
+			SizeBytes: header.Size,
+			UserID:    userID,
+			FolderID:  folderID,
+			File:      file,
+		},
 	)
 	if err != nil {
 		switch {

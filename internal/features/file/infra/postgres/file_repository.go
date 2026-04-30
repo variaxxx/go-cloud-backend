@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -142,4 +143,74 @@ func (r *FileRepository) FindByFolderIDAndUserID(
 	}
 
 	return files, nil
+}
+
+func (r *FileRepository) FindByIDAndUserID(
+	ctx context.Context,
+	id uuid.UUID,
+	userID int64,
+) (file_domain.File, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
+	defer cancel()
+
+	const query = `
+		SELECT id, created_at, updated_at, deleted_at, filename, mimetype, status, storage_path, size_bytes, user_id, folder_id
+		FROM cloud.files
+		WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL;
+	`
+
+	var file file_domain.File
+	var deletedAt *time.Time
+	var dbMimetype *string
+	var dbFolderID *uuid.UUID
+	if err := r.pool.QueryRow(ctx, query, id, userID).Scan(
+		&file.ID,
+		&file.CreatedAt,
+		&file.UpdatedAt,
+		&deletedAt,
+		&file.Filename,
+		&dbMimetype,
+		&file.Status,
+		&file.StoragePath,
+		&file.SizeBytes,
+		&file.UserID,
+		&dbFolderID,
+	); err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return file_domain.File{}, fmt.Errorf("find file by id and user id: %w", core_errors.ErrNotFound)
+		default:
+			return file_domain.File{}, fmt.Errorf("find file by id and user id: %w", err)
+		}
+	}
+
+	file.DeletedAt = deletedAt
+	file.Mimetype = dbMimetype
+	file.FolderID = dbFolderID
+
+	return file, nil
+}
+
+func (r *FileRepository) Delete(
+	ctx context.Context,
+	id uuid.UUID,
+) error {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
+	defer cancel()
+
+	const query = `
+		DELETE FROM cloud.files
+		WHERE id = $1;
+	`
+
+	commandTag, err := r.pool.Exec(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("delete file: %w", err)
+	}
+
+	if commandTag.RowsAffected() == 0 {
+		return fmt.Errorf("delete file: %w", core_errors.ErrNotFound)
+	}
+
+	return nil
 }

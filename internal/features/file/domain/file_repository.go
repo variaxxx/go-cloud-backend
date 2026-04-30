@@ -23,4 +23,15 @@ type FileRepository interface {
 		folderID *uuid.UUID,
 		userID int64,
 	) ([]File, error)
+
+	FindByIDAndUserID(
+		ctx context.Context,
+		id uuid.UUID,
+		userID int64,
+	) (File, error)
+
+	Delete(
+		ctx context.Context,
+		id uuid.UUID,
+	) error
 }

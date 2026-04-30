@@ -5,7 +5,6 @@ import (
 	core_logger "cloud/internal/core/logger"
 	core_http_auth "cloud/internal/core/transport/http/auth"
 	core_http_response "cloud/internal/core/transport/http/response"
-	folder_app "cloud/internal/features/folder/application"
 	"errors"
 	"net/http"
 
@@ -42,10 +41,8 @@ func (h *Handler) GetContent(rw http.ResponseWriter, r *http.Request) {
 
 	content, err := h.folderService.GetContent(
 		r.Context(),
-		folder_app.GetFolderContentParams{
-			UserID:   userID,
-			FolderID: folderID,
-		},
+		userID,
+		folderID,
 	)
 	if err != nil {
 		switch {

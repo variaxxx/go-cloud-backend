@@ -22,11 +22,6 @@ type EditFolderParams struct {
 	IsParentIDUpdate bool
 }
 
-type GetFolderContentParams struct {
-	UserID   int64
-	FolderID *uuid.UUID
-}
-
 type FolderContent struct {
 	FolderName *string
 	FolderPath []string
@@ -53,6 +48,7 @@ type FolderUseCase interface {
 
 	GetContent(
 		ctx context.Context,
-		params GetFolderContentParams,
+		userID int64,
+		folderID *uuid.UUID,
 	) (FolderContent, error)
 }

@@ -6,7 +6,6 @@ import (
 	folder_domain "cloud/internal/features/folder/domain"
 	"context"
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/google/uuid"
@@ -32,25 +31,20 @@ func NewFileService(
 
 func (s *FileService) Upload(
 	ctx context.Context,
-	filename string,
-	mimetype *string,
-	sizeBytes int64,
-	userID int64,
-	folderID *uuid.UUID,
-	file io.Reader,
+	params UploadFileParams,
 ) (file_domain.File, error) {
-	filename = strings.TrimSpace(filename)
+	filename := strings.TrimSpace(params.Filename)
 	if filename == "" {
 		return file_domain.File{}, fmt.Errorf("upload file: %w", core_errors.ErrInvalidArgument)
 	}
 
-	if folderID != nil {
-		if _, err := s.folders.FindByIDAndUserID(ctx, *folderID, userID); err != nil {
+	if params.FolderID != nil {
+		if _, err := s.folders.FindByIDAndUserID(ctx, *params.FolderID, params.UserID); err != nil {
 			return file_domain.File{}, fmt.Errorf("upload file: folder validation: %w", err)
 		}
 	}
 
-	path, err := s.storage.Save(ctx, filename, file)
+	path, err := s.storage.Save(ctx, filename, params.File)
 	if err != nil {
 		return file_domain.File{}, fmt.Errorf("file save to storage: %w", err)
 	}
@@ -58,12 +52,12 @@ func (s *FileService) Upload(
 	createdFile, err := s.repository.Create(
 		ctx,
 		filename,
-		mimetype,
+		params.Mimetype,
 		file_domain.FileStatusUploaded,
 		path,
-		sizeBytes,
-		userID,
-		folderID,
+		params.SizeBytes,
+		params.UserID,
+		params.FolderID,
 	)
 	if err != nil {
 		if deleteErr := s.storage.Delete(ctx, path); deleteErr != nil {
@@ -75,4 +69,25 @@ func (s *FileService) Upload(
 	// TODO: post msg to rmq
 
 	return createdFile, nil
+}
+
+func (s *FileService) Delete(
+	ctx context.Context,
+	id uuid.UUID,
+	userID int64,
+) error {
+	currentFile, err := s.repository.FindByIDAndUserID(ctx, id, userID)
+	if err != nil {
+		return fmt.Errorf("find current file: %w", err)
+	}
+
+	if err := s.repository.Delete(ctx, id); err != nil {
+		return fmt.Errorf("delete file: %w", err)
+	}
+
+	if err := s.storage.Delete(ctx, currentFile.StoragePath); err != nil {
+		return fmt.Errorf("delete file from storage: %w", err)
+	}
+
+	return nil
 }
