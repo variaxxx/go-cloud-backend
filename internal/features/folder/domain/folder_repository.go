@@ -42,4 +42,9 @@ type FolderRepository interface {
 		parentID int64,
 		userID int64,
 	) (bool, error)
+
+	Delete(
+		ctx context.Context,
+		id int64,
+	) error
 }

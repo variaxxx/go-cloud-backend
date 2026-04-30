@@ -95,6 +95,22 @@ func (s *FolderService) Edit(
 	return updatedFolder, nil
 }
 
+func (s *FolderService) Delete(
+	ctx context.Context,
+	id int64,
+	userID int64,
+) error {
+	if _, err := s.folderRepo.FindByIDAndUserID(ctx, id, userID); err != nil {
+		return fmt.Errorf("find current folder: %w", err)
+	}
+
+	if err := s.folderRepo.Delete(ctx, id); err != nil {
+		return fmt.Errorf("delete folder: %w", err)
+	}
+
+	return nil
+}
+
 func (s *FolderService) GetContent(
 	ctx context.Context,
 	params GetFolderContentParams,

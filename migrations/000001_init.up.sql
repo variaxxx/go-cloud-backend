@@ -37,7 +37,7 @@ CREATE TABLE cloud.files (
   size_bytes BIGINT NOT NULL CHECK (size_bytes >= 0),
 
   user_id BIGINT NOT NULL REFERENCES cloud.users(id) ON DELETE CASCADE,
-  folder_id BIGINT REFERENCES cloud.folders(id) ON DELETE SET NULL
+  folder_id BIGINT REFERENCES cloud.folders(id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_files_user_status ON cloud.files(user_id, status);

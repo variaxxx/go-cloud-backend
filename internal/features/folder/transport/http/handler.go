@@ -57,5 +57,13 @@ func (h *Handler) Routes(
 				auth_http.Auth(tokenManager),
 			},
 		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/{id}",
+			Handler: h.Delete,
+			Middlewares: []core_http_middleware.Middleware{
+				auth_http.Auth(tokenManager),
+			},
+		},
 	}
 }

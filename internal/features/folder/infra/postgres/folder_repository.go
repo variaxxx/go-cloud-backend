@@ -297,3 +297,27 @@ func (r *FolderRepository) WouldCreateCycle(
 
 	return wouldCreateCycle, nil
 }
+
+func (r *FolderRepository) Delete(
+	ctx context.Context,
+	id int64,
+) error {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
+	defer cancel()
+
+	const query = `
+		DELETE FROM cloud.folders
+		WHERE id = $1;
+	`
+
+	commandTag, err := r.pool.Exec(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("delete folder: %w", err)
+	}
+
+	if commandTag.RowsAffected() == 0 {
+		return fmt.Errorf("delete folder: %w", core_errors.ErrNotFound)
+	}
+
+	return nil
+}

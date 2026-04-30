@@ -43,6 +43,12 @@ type FolderUseCase interface {
 		params EditFolderParams,
 	) (folder_domain.Folder, error)
 
+	Delete(
+		ctx context.Context,
+		id int64,
+		userID int64,
+	) error
+
 	GetContent(
 		ctx context.Context,
 		params GetFolderContentParams,
