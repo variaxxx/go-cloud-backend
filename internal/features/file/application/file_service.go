@@ -85,9 +85,7 @@ func (s *FileService) Delete(
 		return fmt.Errorf("delete file: %w", err)
 	}
 
-	if err := s.storage.Delete(ctx, currentFile.StoragePath); err != nil {
-		return fmt.Errorf("delete file from storage: %w", err)
-	}
+	_ = s.storage.Delete(ctx, currentFile.StoragePath)
 
 	return nil
 }

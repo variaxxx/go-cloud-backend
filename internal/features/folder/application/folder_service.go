@@ -14,15 +14,18 @@ import (
 type FolderService struct {
 	folderRepo folder_domain.FolderRepository
 	fileRepo   file_domain.FileRepository
+	storage    file_domain.FileStorage
 }
 
 func NewFolderService(
 	folderRepo folder_domain.FolderRepository,
 	fileRepo file_domain.FileRepository,
+	storage file_domain.FileStorage,
 ) *FolderService {
 	return &FolderService{
 		folderRepo: folderRepo,
 		fileRepo:   fileRepo,
+		storage:    storage,
 	}
 }
 
@@ -113,8 +116,17 @@ func (s *FolderService) Delete(
 		return fmt.Errorf("find current folder: %w", err)
 	}
 
+	files, err := s.fileRepo.FindByFolderTreeAndUserID(ctx, id, userID)
+	if err != nil {
+		return fmt.Errorf("find files in folder tree: %w", err)
+	}
+
 	if err := s.folderRepo.Delete(ctx, id); err != nil {
 		return fmt.Errorf("delete folder: %w", err)
+	}
+
+	for _, file := range files {
+		_ = s.storage.Delete(ctx, file.StoragePath)
 	}
 
 	return nil

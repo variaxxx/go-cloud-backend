@@ -145,6 +145,76 @@ func (r *FileRepository) FindByFolderIDAndUserID(
 	return files, nil
 }
 
+func (r *FileRepository) FindByFolderTreeAndUserID(
+	ctx context.Context,
+	rootFolderID uuid.UUID,
+	userID int64,
+) ([]file_domain.File, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
+	defer cancel()
+
+	const query = `
+		WITH RECURSIVE folder_tree AS (
+			SELECT id
+			FROM cloud.folders
+			WHERE id = $1 AND user_id = $2
+
+			UNION ALL
+
+			SELECT child.id
+			FROM cloud.folders child
+			JOIN folder_tree parent ON child.parent_id = parent.id
+			WHERE child.user_id = $2
+		)
+		SELECT id, created_at, updated_at, deleted_at, filename, mimetype, status, storage_path, size_bytes, user_id, folder_id
+		FROM cloud.files
+		WHERE user_id = $2
+		  AND deleted_at IS NULL
+		  AND folder_id IN (SELECT id FROM folder_tree)
+		ORDER BY filename;
+	`
+
+	rows, err := r.pool.Query(ctx, query, rootFolderID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("find files by folder tree and user id: %w", err)
+	}
+	defer rows.Close()
+
+	files := make([]file_domain.File, 0)
+	for rows.Next() {
+		var file file_domain.File
+		var deletedAt *time.Time
+		var dbMimetype *string
+		var dbFolderID *uuid.UUID
+		if err := rows.Scan(
+			&file.ID,
+			&file.CreatedAt,
+			&file.UpdatedAt,
+			&deletedAt,
+			&file.Filename,
+			&dbMimetype,
+			&file.Status,
+			&file.StoragePath,
+			&file.SizeBytes,
+			&file.UserID,
+			&dbFolderID,
+		); err != nil {
+			return nil, fmt.Errorf("scan file row from folder tree: %w", err)
+		}
+
+		file.DeletedAt = deletedAt
+		file.Mimetype = dbMimetype
+		file.FolderID = dbFolderID
+		files = append(files, file)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate file rows from folder tree: %w", err)
+	}
+
+	return files, nil
+}
+
 func (r *FileRepository) FindByIDAndUserID(
 	ctx context.Context,
 	id uuid.UUID,
