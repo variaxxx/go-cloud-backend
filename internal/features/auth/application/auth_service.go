@@ -6,6 +6,7 @@ import (
 	user_domain "cloud/internal/features/user/domain"
 	"context"
 	"fmt"
+	"strings"
 )
 
 type AuthService struct {
@@ -40,6 +41,11 @@ func (s *AuthService) Register(
 	username string,
 	password string,
 ) (Tokens, error) {
+	username = strings.TrimSpace(username)
+	if username == "" {
+		return Tokens{}, fmt.Errorf("register user: %w", core_errors.ErrInvalidArgument)
+	}
+
 	passwordHash, err := s.hasher.Hash(password)
 	if err != nil {
 		return Tokens{}, fmt.Errorf("hash password: %w", err)
@@ -63,6 +69,11 @@ func (s *AuthService) Login(
 	username string,
 	password string,
 ) (Tokens, error) {
+	username = strings.TrimSpace(username)
+	if username == "" {
+		return Tokens{}, fmt.Errorf("find user by username: %w", core_errors.ErrInvalidArgument)
+	}
+
 	user, err := s.userRepository.FindByUsername(ctx, username)
 	if err != nil {
 		return Tokens{}, fmt.Errorf("find user by username: %w", err)

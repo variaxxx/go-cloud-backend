@@ -19,8 +19,11 @@ type RefreshTokenRepository interface {
 		replacedByID *int64,
 	) (RefreshToken, error)
 
-	FindByHash(
+	Rotate(
 		ctx context.Context,
-		tokenHash string,
+		oldTokenHash string,
+		newTokenHash string,
+		expiresAt time.Time,
+		now time.Time,
 	) (RefreshToken, error)
 }

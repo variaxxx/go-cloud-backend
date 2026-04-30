@@ -26,11 +26,16 @@ func (h *Handler) RefreshTokens(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println(refreshTokenCookie.Value)
+
 	tokens, err := h.authService.RefreshTokens(r.Context(), refreshTokenCookie.Value)
 	if err != nil {
 		switch {
 		case errors.Is(err, core_errors.ErrInvalidArgument), errors.Is(err, core_errors.ErrNotFound):
-			rh.ErrorResponse(core_errors.ErrInvalidArgument, "Invalid refresh token")
+			rh.ErrorResponse(
+				fmt.Errorf("%w: %w", core_errors.ErrInvalidArgument, err),
+				"Invalid refresh token",
+			)
 		default:
 			rh.ErrorResponse(err, "Unable to refresh tokens right now")
 		}

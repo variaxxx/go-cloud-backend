@@ -3,8 +3,8 @@ package file_http
 import (
 	core_errors "cloud/internal/core/errors"
 	core_logger "cloud/internal/core/logger"
+	core_http_auth "cloud/internal/core/transport/http/auth"
 	core_http_response "cloud/internal/core/transport/http/response"
-	auth_http "cloud/internal/features/auth/transport/http"
 	"errors"
 	"fmt"
 	"net/http"
@@ -26,7 +26,7 @@ func (h *Handler) Upload(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, ok := auth_http.UserIDFromContext(r.Context())
+	userID, ok := core_http_auth.UserIDFromContext(r.Context())
 	if !ok {
 		rh.ErrorResponse(core_errors.ErrUnauthorized, "Unauthorized")
 		return

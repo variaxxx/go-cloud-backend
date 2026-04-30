@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 )
 
 type FileService struct {
@@ -36,6 +37,7 @@ func (s *FileService) Upload(
 	folderID *int64,
 	file io.Reader,
 ) (file_domain.File, error) {
+	filename = strings.TrimSpace(filename)
 	if filename == "" {
 		return file_domain.File{}, fmt.Errorf("upload file: %w", core_errors.ErrInvalidArgument)
 	}

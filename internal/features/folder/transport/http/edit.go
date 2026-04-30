@@ -3,10 +3,10 @@ package folder_http
 import (
 	core_errors "cloud/internal/core/errors"
 	core_logger "cloud/internal/core/logger"
+	core_http_auth "cloud/internal/core/transport/http/auth"
 	core_http_request "cloud/internal/core/transport/http/request"
 	core_http_response "cloud/internal/core/transport/http/response"
 	core_http_utils "cloud/internal/core/transport/http/utils"
-	auth_http "cloud/internal/features/auth/transport/http"
 	folder_app "cloud/internal/features/folder/application"
 	"encoding/json"
 	"errors"
@@ -71,7 +71,7 @@ func (h *Handler) Edit(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
 	rh := core_http_response.NewHTTPResponseHandler(log, rw)
 
-	userID, ok := auth_http.UserIDFromContext(r.Context())
+	userID, ok := core_http_auth.UserIDFromContext(r.Context())
 	if !ok {
 		rh.ErrorResponse(core_errors.ErrUnauthorized, "Unauthorized")
 		return

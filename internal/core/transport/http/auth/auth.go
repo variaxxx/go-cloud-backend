@@ -1,20 +1,23 @@
-package auth_http
+package core_http_auth
 
 import (
 	core_errors "cloud/internal/core/errors"
 	core_logger "cloud/internal/core/logger"
 	core_http_middleware "cloud/internal/core/transport/http/middleware"
 	core_http_response "cloud/internal/core/transport/http/response"
-	auth_domain "cloud/internal/features/auth/domain"
 	"context"
 	"net/http"
 	"strings"
 )
 
-const userIDContextKey string = "user_id"
+type TokenParser interface {
+	Parse(tokenString string) (int64, error)
+}
 
-func Auth(
-	tokenManager auth_domain.TokenManager,
+type userIDContextKey struct{}
+
+func Middleware(
+	tokenParser TokenParser,
 ) core_http_middleware.Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -23,34 +26,24 @@ func Auth(
 
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
-				rh.ErrorResponse(
-					core_errors.ErrUnauthorized,
-					"Unauthorized",
-				)
+				rh.ErrorResponse(core_errors.ErrUnauthorized, "Unauthorized")
 				return
 			}
 
-			prefix := "Bearer "
+			const prefix = "Bearer "
 			if !strings.HasPrefix(authHeader, prefix) {
-				rh.ErrorResponse(
-					core_errors.ErrUnauthorized,
-					"Bearer token required",
-				)
+				rh.ErrorResponse(core_errors.ErrUnauthorized, "Bearer token required")
 				return
 			}
 
 			token := strings.TrimPrefix(authHeader, prefix)
-
-			userID, err := tokenManager.Parse(token)
+			userID, err := tokenParser.Parse(token)
 			if err != nil {
-				rh.ErrorResponse(
-					core_errors.ErrUnauthorized,
-					"Invalid access token",
-				)
+				rh.ErrorResponse(core_errors.ErrUnauthorized, "Invalid access token")
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), userIDContextKey, userID)
+			ctx := context.WithValue(r.Context(), userIDContextKey{}, userID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
@@ -59,6 +52,6 @@ func Auth(
 func UserIDFromContext(
 	ctx context.Context,
 ) (int64, bool) {
-	id, ok := ctx.Value(userIDContextKey).(int64)
+	id, ok := ctx.Value(userIDContextKey{}).(int64)
 	return id, ok
 }

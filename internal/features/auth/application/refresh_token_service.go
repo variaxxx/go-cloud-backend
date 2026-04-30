@@ -1,7 +1,6 @@
 package auth_app
 
 import (
-	core_errors "cloud/internal/core/errors"
 	auth_domain "cloud/internal/features/auth/domain"
 	"context"
 	"crypto/rand"
@@ -58,41 +57,19 @@ func (s *RefreshTokenService) ReplaceOld(
 	ctx context.Context,
 	oldToken string,
 ) (string, auth_domain.RefreshToken, error) {
-	oldTokenHash := s.hasher.Hash(oldToken)
-	oldTokenInfo, err := s.repository.FindByHash(ctx, oldTokenHash)
-	if err != nil {
-		return "", auth_domain.RefreshToken{}, fmt.Errorf("get old token info: %w", err)
-	}
-
 	now := time.Now()
-	if oldTokenInfo.RevokedAt != nil {
-		return "", auth_domain.RefreshToken{}, fmt.Errorf("%w: refresh token has been revoked", core_errors.ErrInvalidArgument)
-	}
-
-	if !oldTokenInfo.ExpiresAt.After(now) {
-		return "", auth_domain.RefreshToken{}, fmt.Errorf("%w: refresh token has expired", core_errors.ErrInvalidArgument)
-	}
-
 	expiresAt := now.Add(s.refreshTTL)
 	newToken, err := s.generateToken()
 	if err != nil {
 		return "", auth_domain.RefreshToken{}, err
 	}
+
+	oldTokenHash := s.hasher.Hash(oldToken)
 	newTokenHash := s.hasher.Hash(newToken)
 
-	newTokenInfo, err := s.repository.Create(
-		ctx,
-		oldTokenInfo.UserID,
-		expiresAt,
-		newTokenHash,
-	)
+	newTokenInfo, err := s.repository.Rotate(ctx, oldTokenHash, newTokenHash, expiresAt, now)
 	if err != nil {
-		return "", auth_domain.RefreshToken{}, err
-	}
-
-	_, err = s.repository.Revoke(ctx, oldTokenHash, &newTokenInfo.ID)
-	if err != nil {
-		return "", auth_domain.RefreshToken{}, fmt.Errorf("revoke old token: %w", err)
+		return "", auth_domain.RefreshToken{}, fmt.Errorf("rotate refresh token: %w", err)
 	}
 
 	return newToken, newTokenInfo, nil

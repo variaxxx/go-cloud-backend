@@ -28,11 +28,18 @@ func (s *FolderService) Create(
 	ctx context.Context,
 	params CreateFolderParams,
 ) (folder_domain.Folder, error) {
-	if params.Name == "" {
+	name := strings.TrimSpace(params.Name)
+	if name == "" {
 		return folder_domain.Folder{}, fmt.Errorf("create folder: %w", core_errors.ErrInvalidArgument)
 	}
 
-	folder, err := s.folderRepo.Create(ctx, params.Name, params.UserID, params.ParentID)
+	if params.ParentID != nil {
+		if _, err := s.folderRepo.FindByIDAndUserID(ctx, *params.ParentID, params.UserID); err != nil {
+			return folder_domain.Folder{}, fmt.Errorf("find parent folder: %w", err)
+		}
+	}
+
+	folder, err := s.folderRepo.Create(ctx, name, params.UserID, params.ParentID)
 	if err != nil {
 		return folder_domain.Folder{}, fmt.Errorf("create folder: %w", err)
 	}

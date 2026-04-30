@@ -3,9 +3,8 @@ package folder_http
 import (
 	core_errors "cloud/internal/core/errors"
 	core_logger "cloud/internal/core/logger"
+	core_http_auth "cloud/internal/core/transport/http/auth"
 	core_http_response "cloud/internal/core/transport/http/response"
-	auth_http "cloud/internal/features/auth/transport/http"
-	file_http "cloud/internal/features/file/transport/http"
 	folder_app "cloud/internal/features/folder/application"
 	"errors"
 	"net/http"
@@ -13,17 +12,17 @@ import (
 )
 
 type GetContentResponse struct {
-	FolderName *string             `json:"folder_name,omitempty"`
-	FolderPath []string            `json:"folder_path"`
-	Folders    []FolderDTO         `json:"folders"`
-	Files      []file_http.FileDTO `json:"files"`
+	FolderName *string       `json:"folder_name,omitempty"`
+	FolderPath []string      `json:"folder_path"`
+	Folders    []FolderDTO   `json:"folders"`
+	Files      []FileDTOView `json:"files"`
 }
 
 func (h *Handler) GetContent(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
 	rh := core_http_response.NewHTTPResponseHandler(log, rw)
 
-	userID, ok := auth_http.UserIDFromContext(r.Context())
+	userID, ok := core_http_auth.UserIDFromContext(r.Context())
 	if !ok {
 		rh.ErrorResponse(core_errors.ErrUnauthorized, "Unauthorized")
 		return
@@ -61,6 +60,6 @@ func (h *Handler) GetContent(rw http.ResponseWriter, r *http.Request) {
 		FolderName: content.FolderName,
 		FolderPath: content.FolderPath,
 		Folders:    NewFolderDTOs(content.Folders),
-		Files:      file_http.NewFileDTOs(content.Files),
+		Files:      NewFileDTOViews(content.Files),
 	}, http.StatusOK)
 }

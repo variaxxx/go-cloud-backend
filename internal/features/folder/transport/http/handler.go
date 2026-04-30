@@ -1,10 +1,9 @@
 package folder_http
 
 import (
+	core_http_auth "cloud/internal/core/transport/http/auth"
 	core_http_middleware "cloud/internal/core/transport/http/middleware"
 	core_http_server "cloud/internal/core/transport/http/server"
-	auth_domain "cloud/internal/features/auth/domain"
-	auth_http "cloud/internal/features/auth/transport/http"
 	folder_app "cloud/internal/features/folder/application"
 	"net/http"
 )
@@ -22,7 +21,7 @@ func NewHandler(
 }
 
 func (h *Handler) Routes(
-	tokenManager auth_domain.TokenManager,
+	tokenParser core_http_auth.TokenParser,
 ) []core_http_server.Route {
 	return []core_http_server.Route{
 		{
@@ -30,7 +29,7 @@ func (h *Handler) Routes(
 			Path:    "/content",
 			Handler: h.GetContent,
 			Middlewares: []core_http_middleware.Middleware{
-				auth_http.Auth(tokenManager),
+				core_http_auth.Middleware(tokenParser),
 			},
 		},
 		{
@@ -38,7 +37,7 @@ func (h *Handler) Routes(
 			Path:    "/{id}/content",
 			Handler: h.GetContent,
 			Middlewares: []core_http_middleware.Middleware{
-				auth_http.Auth(tokenManager),
+				core_http_auth.Middleware(tokenParser),
 			},
 		},
 		{
@@ -46,7 +45,7 @@ func (h *Handler) Routes(
 			Path:    "/",
 			Handler: h.Create,
 			Middlewares: []core_http_middleware.Middleware{
-				auth_http.Auth(tokenManager),
+				core_http_auth.Middleware(tokenParser),
 			},
 		},
 		{
@@ -54,7 +53,7 @@ func (h *Handler) Routes(
 			Path:    "/{id}",
 			Handler: h.Edit,
 			Middlewares: []core_http_middleware.Middleware{
-				auth_http.Auth(tokenManager),
+				core_http_auth.Middleware(tokenParser),
 			},
 		},
 		{
@@ -62,7 +61,7 @@ func (h *Handler) Routes(
 			Path:    "/{id}",
 			Handler: h.Delete,
 			Middlewares: []core_http_middleware.Middleware{
-				auth_http.Auth(tokenManager),
+				core_http_auth.Middleware(tokenParser),
 			},
 		},
 	}
