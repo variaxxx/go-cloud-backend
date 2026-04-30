@@ -48,5 +48,13 @@ func (h *Handler) Routes(
 				core_http_auth.Middleware(tokenParser),
 			},
 		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/{id}/download",
+			Handler: h.Download,
+			Middlewares: []core_http_middleware.Middleware{
+				core_http_auth.Middleware(tokenParser),
+			},
+		},
 	}
 }

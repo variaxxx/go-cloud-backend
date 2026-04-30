@@ -131,3 +131,25 @@ func (s *FileService) Edit(
 
 	return updatedFile, nil
 }
+
+func (s *FileService) Download(
+	ctx context.Context,
+	id uuid.UUID,
+	userID int64,
+) (DownloadFileResult, error) {
+	file, err := s.fileRepo.FindByIDAndUserID(ctx, id, userID)
+	if err != nil {
+		return DownloadFileResult{}, fmt.Errorf("find current file: %w", err)
+	}
+
+	content, err := s.storage.Open(ctx, file.StoragePath)
+	if err != nil {
+		return DownloadFileResult{}, fmt.Errorf("open file content: %w", err)
+	}
+
+	return DownloadFileResult{
+		Filename: file.Filename,
+		Mimetype: file.Mimetype,
+		Content:  content,
+	}, nil
+}

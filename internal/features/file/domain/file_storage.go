@@ -16,4 +16,9 @@ type FileStorage interface {
 		ctx context.Context,
 		path string,
 	) error
+
+	Open(
+		ctx context.Context,
+		path string,
+	) (io.ReadCloser, error)
 }

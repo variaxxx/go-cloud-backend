@@ -24,6 +24,13 @@ type EditFileParams struct {
 	FolderID         *uuid.UUID
 	IsFolderIDUpdate bool
 }
+
+type DownloadFileResult struct {
+	Filename string
+	Mimetype *string
+	Content  io.ReadCloser
+}
+
 type FileUseCase interface {
 	Upload(
 		ctx context.Context,
@@ -40,4 +47,10 @@ type FileUseCase interface {
 		ctx context.Context,
 		params EditFileParams,
 	) (file_domain.File, error)
+
+	Download(
+		ctx context.Context,
+		id uuid.UUID,
+		userID int64,
+	) (DownloadFileResult, error)
 }

@@ -61,3 +61,17 @@ func (s *LocalFileStorage) Delete(
 
 	return nil
 }
+
+func (s *LocalFileStorage) Open(
+	ctx context.Context,
+	path string,
+) (io.ReadCloser, error) {
+	fullPath := filepath.Join(s.baseDir, path)
+
+	file, err := os.Open(fullPath)
+	if err != nil {
+		return nil, fmt.Errorf("open file from storage: %w", err)
+	}
+
+	return file, nil
+}
