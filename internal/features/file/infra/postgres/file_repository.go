@@ -284,3 +284,57 @@ func (r *FileRepository) Delete(
 
 	return nil
 }
+
+func (r *FileRepository) Update(
+	ctx context.Context,
+	id uuid.UUID,
+	userID int64,
+	filename string,
+	folderID *uuid.UUID,
+) (file_domain.File, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
+	defer cancel()
+
+	const query = `
+		UPDATE cloud.files
+		SET filename = $3, folder_id = $4, updated_at = NOW()
+		WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
+		RETURNING id, created_at, updated_at, deleted_at, filename, mimetype, status, storage_path, size_bytes, user_id, folder_id;
+	`
+
+	var file file_domain.File
+	var deletedAt *time.Time
+	var dbMimetype *string
+	var dbFolderID *uuid.UUID
+	if err := r.pool.QueryRow(ctx, query, id, userID, filename, folderID).Scan(
+		&file.ID,
+		&file.CreatedAt,
+		&file.UpdatedAt,
+		&deletedAt,
+		&file.Filename,
+		&dbMimetype,
+		&file.Status,
+		&file.StoragePath,
+		&file.SizeBytes,
+		&file.UserID,
+		&dbFolderID,
+	); err != nil {
+		var pgErr *pgconn.PgError
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return file_domain.File{}, fmt.Errorf("update file: %w", core_errors.ErrNotFound)
+		case errors.As(err, &pgErr) && pgErr.Code == "23505":
+			return file_domain.File{}, fmt.Errorf("update file: %w", core_errors.ErrConflict)
+		case errors.As(err, &pgErr) && pgErr.Code == "23503":
+			return file_domain.File{}, fmt.Errorf("update file: %w", core_errors.ErrInvalidArgument)
+		default:
+			return file_domain.File{}, fmt.Errorf("update file: %w", err)
+		}
+	}
+
+	file.DeletedAt = deletedAt
+	file.Mimetype = dbMimetype
+	file.FolderID = dbFolderID
+
+	return file, nil
+}

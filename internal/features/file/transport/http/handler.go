@@ -33,6 +33,14 @@ func (h *Handler) Routes(
 			},
 		},
 		{
+			Method:  http.MethodPatch,
+			Path:    "/{id}",
+			Handler: h.Edit,
+			Middlewares: []core_http_middleware.Middleware{
+				core_http_auth.Middleware(tokenParser),
+			},
+		},
+		{
 			Method:  http.MethodDelete,
 			Path:    "/{id}",
 			Handler: h.Delete,

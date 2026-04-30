@@ -8,38 +8,15 @@ import (
 	core_http_response "cloud/internal/core/transport/http/response"
 	core_http_utils "cloud/internal/core/transport/http/utils"
 	folder_app "cloud/internal/features/folder/application"
-	"encoding/json"
 	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
 )
 
-type NullableUUIDField struct {
-	Present bool
-	Value   *uuid.UUID
-}
-
-func (f *NullableUUIDField) UnmarshalJSON(data []byte) error {
-	f.Present = true
-
-	if string(data) == "null" {
-		f.Value = nil
-		return nil
-	}
-
-	var value uuid.UUID
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-
-	f.Value = &value
-	return nil
-}
-
 type EditRequest struct {
-	Name     *string           `json:"name" validate:"omitempty,min=1,max=255"`
-	ParentID NullableUUIDField `json:"parent_id"`
+	Name     *string                             `json:"name" validate:"omitempty,min=1,max=255"`
+	ParentID core_http_request.NullableUUIDField `json:"parent_id"`
 }
 
 type EditResponse = FolderDTO

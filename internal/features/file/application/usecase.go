@@ -17,6 +17,13 @@ type UploadFileParams struct {
 	File      io.Reader
 }
 
+type EditFileParams struct {
+	ID               uuid.UUID
+	UserID           int64
+	Filename         *string
+	FolderID         *uuid.UUID
+	IsFolderIDUpdate bool
+}
 type FileUseCase interface {
 	Upload(
 		ctx context.Context,
@@ -28,4 +35,9 @@ type FileUseCase interface {
 		id uuid.UUID,
 		userID int64,
 	) error
+
+	Edit(
+		ctx context.Context,
+		params EditFileParams,
+	) (file_domain.File, error)
 }

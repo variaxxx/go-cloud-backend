@@ -12,9 +12,9 @@ import (
 )
 
 type FileService struct {
-	repository file_domain.FileRepository
+	fileRepo   file_domain.FileRepository
 	storage    file_domain.FileStorage
-	folders    folder_domain.FolderRepository
+	folderRepo folder_domain.FolderRepository
 }
 
 func NewFileService(
@@ -23,9 +23,9 @@ func NewFileService(
 	folders folder_domain.FolderRepository,
 ) *FileService {
 	return &FileService{
-		repository: repository,
+		fileRepo:   repository,
 		storage:    storage,
-		folders:    folders,
+		folderRepo: folders,
 	}
 }
 
@@ -39,7 +39,7 @@ func (s *FileService) Upload(
 	}
 
 	if params.FolderID != nil {
-		if _, err := s.folders.FindByIDAndUserID(ctx, *params.FolderID, params.UserID); err != nil {
+		if _, err := s.folderRepo.FindByIDAndUserID(ctx, *params.FolderID, params.UserID); err != nil {
 			return file_domain.File{}, fmt.Errorf("upload file: folder validation: %w", err)
 		}
 	}
@@ -49,7 +49,7 @@ func (s *FileService) Upload(
 		return file_domain.File{}, fmt.Errorf("file save to storage: %w", err)
 	}
 
-	createdFile, err := s.repository.Create(
+	createdFile, err := s.fileRepo.Create(
 		ctx,
 		filename,
 		params.Mimetype,
@@ -76,16 +76,58 @@ func (s *FileService) Delete(
 	id uuid.UUID,
 	userID int64,
 ) error {
-	currentFile, err := s.repository.FindByIDAndUserID(ctx, id, userID)
+	currentFile, err := s.fileRepo.FindByIDAndUserID(ctx, id, userID)
 	if err != nil {
 		return fmt.Errorf("find current file: %w", err)
 	}
 
-	if err := s.repository.Delete(ctx, id); err != nil {
+	if err := s.fileRepo.Delete(ctx, id); err != nil {
 		return fmt.Errorf("delete file: %w", err)
 	}
 
 	_ = s.storage.Delete(ctx, currentFile.StoragePath)
 
 	return nil
+}
+
+func (s *FileService) Edit(
+	ctx context.Context,
+	params EditFileParams,
+) (file_domain.File, error) {
+	if params.Filename == nil && !params.IsFolderIDUpdate {
+		return file_domain.File{}, fmt.Errorf("edit file: %w", core_errors.ErrInvalidArgument)
+	}
+
+	currentFile, err := s.fileRepo.FindByIDAndUserID(ctx, params.ID, params.UserID)
+	if err != nil {
+		return file_domain.File{}, fmt.Errorf("find current file: %w", err)
+	}
+
+	filename := currentFile.Filename
+	if params.Filename != nil {
+		trimmedName := strings.TrimSpace(*params.Filename)
+		if trimmedName == "" {
+			return file_domain.File{}, fmt.Errorf("edit file: %w", core_errors.ErrInvalidArgument)
+		}
+
+		filename = trimmedName
+	}
+
+	folderID := currentFile.FolderID
+	if params.IsFolderIDUpdate {
+		folderID = params.FolderID
+	}
+
+	if folderID != nil {
+		if _, err := s.folderRepo.FindByIDAndUserID(ctx, *folderID, params.UserID); err != nil {
+			return file_domain.File{}, fmt.Errorf("find folder: %w", err)
+		}
+	}
+
+	updatedFile, err := s.fileRepo.Update(ctx, currentFile.ID, params.UserID, filename, folderID)
+	if err != nil {
+		return file_domain.File{}, fmt.Errorf("update file: %w", err)
+	}
+
+	return updatedFile, nil
 }

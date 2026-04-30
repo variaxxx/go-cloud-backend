@@ -36,6 +36,14 @@ type FileRepository interface {
 		userID int64,
 	) (File, error)
 
+	Update(
+		ctx context.Context,
+		id uuid.UUID,
+		userID int64,
+		filename string,
+		folderID *uuid.UUID,
+	) (File, error)
+
 	Delete(
 		ctx context.Context,
 		id uuid.UUID,
