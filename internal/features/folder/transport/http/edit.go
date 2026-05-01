@@ -19,7 +19,7 @@ type EditRequest struct {
 	ParentID core_http_request.NullableUUIDField `json:"parent_id"`
 }
 
-type EditResponse = FolderDTO
+type EditResponse = folderDTO
 
 func (r EditRequest) ToEditFolderParams(
 	folderID uuid.UUID,
@@ -42,7 +42,7 @@ func (r EditRequest) ToEditFolderParams(
 	return params, nil
 }
 
-func (h *Handler) Edit(rw http.ResponseWriter, r *http.Request) {
+func (h *handler) Edit(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
 	rh := core_http_response.NewHTTPResponseHandler(log, rw)
 

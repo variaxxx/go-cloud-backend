@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type FileService struct {
+type fileService struct {
 	fileRepo   file_domain.FileRepository
 	storage    file_domain.FileStorage
 	folderRepo folder_domain.FolderRepository
@@ -21,15 +21,15 @@ func NewFileService(
 	repository file_domain.FileRepository,
 	storage file_domain.FileStorage,
 	folders folder_domain.FolderRepository,
-) *FileService {
-	return &FileService{
+) *fileService {
+	return &fileService{
 		fileRepo:   repository,
 		storage:    storage,
 		folderRepo: folders,
 	}
 }
 
-func (s *FileService) Upload(
+func (s *fileService) Upload(
 	ctx context.Context,
 	params UploadFileParams,
 ) (file_domain.File, error) {
@@ -71,7 +71,7 @@ func (s *FileService) Upload(
 	return createdFile, nil
 }
 
-func (s *FileService) Delete(
+func (s *fileService) Delete(
 	ctx context.Context,
 	id uuid.UUID,
 	userID int64,
@@ -90,7 +90,7 @@ func (s *FileService) Delete(
 	return nil
 }
 
-func (s *FileService) Edit(
+func (s *fileService) Edit(
 	ctx context.Context,
 	params EditFileParams,
 ) (file_domain.File, error) {
@@ -132,7 +132,7 @@ func (s *FileService) Edit(
 	return updatedFile, nil
 }
 
-func (s *FileService) Download(
+func (s *fileService) Download(
 	ctx context.Context,
 	id uuid.UUID,
 	userID int64,

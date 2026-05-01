@@ -8,29 +8,27 @@ import (
 	"net/http"
 )
 
-type Handler struct {
+type handler struct {
 	userService user_app.UserUseCase
 }
 
 func NewHandler(
 	userService user_app.UserUseCase,
-) *Handler {
-	return &Handler{
+) *handler {
+	return &handler{
 		userService: userService,
 	}
 }
 
-func (h *Handler) Routes(
+func (h *handler) Routes(
 	tokenParser core_http_auth.TokenParser,
 ) []core_http_server.Route {
 	return []core_http_server.Route{
-		{
-			Method:  http.MethodGet,
-			Path:    "/",
-			Handler: h.GetMe,
-			Middlewares: []core_http_middleware.Middleware{
-				core_http_auth.Middleware(tokenParser),
-			},
-		},
+		core_http_server.NewRoute(
+			http.MethodGet,
+			"/",
+			h.GetMe,
+			[]core_http_middleware.Middleware{core_http_auth.Middleware(tokenParser)},
+		),
 	}
 }

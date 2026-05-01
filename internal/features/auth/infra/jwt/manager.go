@@ -8,21 +8,21 @@ import (
 	"github.com/google/uuid"
 )
 
-type Manager struct {
+type manager struct {
 	secret []byte
 	ttl    time.Duration
 }
 
 func NewManager(
-	cfg Config,
-) *Manager {
-	return &Manager{
+	cfg config,
+) *manager {
+	return &manager{
 		secret: []byte(cfg.Secret),
 		ttl:    cfg.Ttl,
 	}
 }
 
-func (m *Manager) Parse(
+func (m *manager) Parse(
 	tokenString string,
 ) (int64, error) {
 	token, err := jwt.ParseWithClaims(
@@ -47,7 +47,7 @@ func (m *Manager) Parse(
 	return claims.UserID, nil
 }
 
-func (m *Manager) Issue(
+func (m *manager) Issue(
 	userId int64,
 ) (string, error) {
 	now := time.Now()

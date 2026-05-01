@@ -14,7 +14,7 @@ type GetMeResponse struct {
 	Username string `json:"username"`
 }
 
-func (h *Handler) GetMe(rw http.ResponseWriter, r *http.Request) {
+func (h *handler) GetMe(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
 	rh := core_http_response.NewHTTPResponseHandler(log, rw)
 

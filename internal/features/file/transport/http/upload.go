@@ -13,9 +13,9 @@ import (
 	"github.com/google/uuid"
 )
 
-type UploadResponse = FileDTO
+type UploadResponse = fileDTO
 
-func (h *Handler) Upload(rw http.ResponseWriter, r *http.Request) {
+func (h *handler) Upload(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
 	rh := core_http_response.NewHTTPResponseHandler(log, rw)
 

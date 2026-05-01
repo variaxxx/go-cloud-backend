@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (h *Handler) Download(rw http.ResponseWriter, r *http.Request) {
+func (h *handler) Download(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
 	rh := core_http_response.NewHTTPResponseHandler(log, rw)
 

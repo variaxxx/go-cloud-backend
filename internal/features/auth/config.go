@@ -7,16 +7,16 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-type Config struct {
+type config struct {
 	RefreshTtl time.Duration `envconfig:"REFRESH_TTL" required:"true"`
 }
 
-func NewConfig() (Config, error) {
-	var config Config
+func NewConfig() (config, error) {
+	var cfg config
 
-	if err := envconfig.Process("AUTH", &config); err != nil {
-		return Config{}, fmt.Errorf("Auth config parse: %w", err)
+	if err := envconfig.Process("AUTH", &cfg); err != nil {
+		return config{}, fmt.Errorf("Auth config parse: %w", err)
 	}
 
-	return config, nil
+	return cfg, nil
 }

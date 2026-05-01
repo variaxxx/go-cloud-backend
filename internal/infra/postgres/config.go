@@ -17,11 +17,11 @@ type Config struct {
 }
 
 func NewConfig() (Config, error) {
-	var config Config
+	var cfg Config
 
-	if err := envconfig.Process("PG", &config); err != nil {
+	if err := envconfig.Process("PG", &cfg); err != nil {
 		return Config{}, fmt.Errorf("PostgreSQL config parse: %w", err)
 	}
 
-	return config, nil
+	return cfg, nil
 }

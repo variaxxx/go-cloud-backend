@@ -14,11 +14,11 @@ import (
 type GetContentResponse struct {
 	FolderName *string       `json:"folder_name,omitempty"`
 	FolderPath []string      `json:"folder_path"`
-	Folders    []FolderDTO   `json:"folders"`
-	Files      []FileDTOView `json:"files"`
+	Folders    []folderDTO   `json:"folders"`
+	Files      []fileDTOView `json:"files"`
 }
 
-func (h *Handler) GetContent(rw http.ResponseWriter, r *http.Request) {
+func (h *handler) GetContent(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
 	rh := core_http_response.NewHTTPResponseHandler(log, rw)
 

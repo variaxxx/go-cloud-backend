@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (h *HelloHTTPHandler) GetHello(
+func (h *helloHTTPHandler) GetHello(
 	rw http.ResponseWriter,
 	r *http.Request,
 ) {

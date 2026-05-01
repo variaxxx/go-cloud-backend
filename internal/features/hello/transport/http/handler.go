@@ -6,24 +6,25 @@ import (
 	"net/http"
 )
 
-type HelloHTTPHandler struct {
+type helloHTTPHandler struct {
 	service hello_app.HelloUseCase
 }
 
 func NewHelloHTTPHandler(
 	service hello_app.HelloUseCase,
-) *HelloHTTPHandler {
-	return &HelloHTTPHandler{
+) *helloHTTPHandler {
+	return &helloHTTPHandler{
 		service: service,
 	}
 }
 
-func (h *HelloHTTPHandler) Routes() []core_http_server.Route {
+func (h *helloHTTPHandler) Routes() []core_http_server.Route {
 	return []core_http_server.Route{
-		{
-			Method:  http.MethodGet,
-			Path:    "/test",
-			Handler: h.GetHello,
-		},
+		core_http_server.NewRoute(
+			http.MethodGet,
+			"/test",
+			h.GetHello,
+			nil,
+		),
 	}
 }

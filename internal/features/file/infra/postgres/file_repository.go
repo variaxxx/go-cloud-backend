@@ -14,19 +14,19 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type FileRepository struct {
+type fileRepository struct {
 	pool infra_postgres.Pool
 }
 
 func NewFileRepository(
 	pool infra_postgres.Pool,
-) *FileRepository {
-	return &FileRepository{
+) *fileRepository {
+	return &fileRepository{
 		pool: pool,
 	}
 }
 
-func (r *FileRepository) Create(
+func (r *fileRepository) Create(
 	ctx context.Context,
 	filename string,
 	mimetype *string,
@@ -80,7 +80,7 @@ func (r *FileRepository) Create(
 	return file, nil
 }
 
-func (r *FileRepository) FindByFolderIDAndUserID(
+func (r *fileRepository) FindByFolderIDAndUserID(
 	ctx context.Context,
 	folderID *uuid.UUID,
 	userID int64,
@@ -145,7 +145,7 @@ func (r *FileRepository) FindByFolderIDAndUserID(
 	return files, nil
 }
 
-func (r *FileRepository) FindByFolderTreeAndUserID(
+func (r *fileRepository) FindByFolderTreeAndUserID(
 	ctx context.Context,
 	rootFolderID uuid.UUID,
 	userID int64,
@@ -215,7 +215,7 @@ func (r *FileRepository) FindByFolderTreeAndUserID(
 	return files, nil
 }
 
-func (r *FileRepository) FindByIDAndUserID(
+func (r *fileRepository) FindByIDAndUserID(
 	ctx context.Context,
 	id uuid.UUID,
 	userID int64,
@@ -261,7 +261,7 @@ func (r *FileRepository) FindByIDAndUserID(
 	return file, nil
 }
 
-func (r *FileRepository) Delete(
+func (r *fileRepository) Delete(
 	ctx context.Context,
 	id uuid.UUID,
 ) error {
@@ -285,7 +285,7 @@ func (r *FileRepository) Delete(
 	return nil
 }
 
-func (r *FileRepository) Update(
+func (r *fileRepository) Update(
 	ctx context.Context,
 	id uuid.UUID,
 	userID int64,

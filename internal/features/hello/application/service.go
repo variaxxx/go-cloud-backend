@@ -4,12 +4,12 @@ type HelloUseCase interface {
 	GetHello() string
 }
 
-type HelloService struct{}
+type helloService struct{}
 
-func NewHelloService() *HelloService {
-	return &HelloService{}
+func NewHelloService() *helloService {
+	return &helloService{}
 }
 
-func (s *HelloService) GetHello() string {
+func (s *helloService) GetHello() string {
 	return "Hello, World!"
 }

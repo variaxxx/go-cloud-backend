@@ -13,7 +13,7 @@ type RefreshTokensResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
-func (h *Handler) RefreshTokens(rw http.ResponseWriter, r *http.Request) {
+func (h *handler) RefreshTokens(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
 	rh := core_http_response.NewHTTPResponseHandler(log, rw)
 

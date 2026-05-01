@@ -12,19 +12,19 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type UserRepository struct {
+type userRepository struct {
 	pool infra_postgres.Pool
 }
 
 func NewUserRepository(
 	pool infra_postgres.Pool,
-) *UserRepository {
-	return &UserRepository{
+) *userRepository {
+	return &userRepository{
 		pool: pool,
 	}
 }
 
-func (r *UserRepository) Create(
+func (r *userRepository) Create(
 	ctx context.Context,
 	username string,
 	passwordHash string,
@@ -60,7 +60,7 @@ func (r *UserRepository) Create(
 	return user, nil
 }
 
-func (r *UserRepository) FindByUsername(
+func (r *userRepository) FindByUsername(
 	ctx context.Context,
 	username string,
 ) (user_domain.User, error) {
@@ -92,7 +92,7 @@ func (r *UserRepository) FindByUsername(
 	return user, nil
 }
 
-func (r *UserRepository) FindByID(
+func (r *userRepository) FindByID(
 	ctx context.Context,
 	id int64,
 ) (user_domain.User, error) {

@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type Handler struct {
+type handler struct {
 	authService auth_app.AuthUseCase
 	refreshTTL  time.Duration
 }
@@ -15,29 +15,32 @@ type Handler struct {
 func NewHandler(
 	authService auth_app.AuthUseCase,
 	refreshTTL time.Duration,
-) *Handler {
-	return &Handler{
+) *handler {
+	return &handler{
 		authService: authService,
 		refreshTTL:  refreshTTL,
 	}
 }
 
-func (h *Handler) Routes() []core_http_server.Route {
+func (h *handler) Routes() []core_http_server.Route {
 	return []core_http_server.Route{
-		{
-			Method:  http.MethodPost,
-			Path:    "/register",
-			Handler: h.Register,
-		},
-		{
-			Method:  http.MethodPost,
-			Path:    "/login",
-			Handler: h.Login,
-		},
-		{
-			Method:  http.MethodPost,
-			Path:    "/refresh",
-			Handler: h.RefreshTokens,
-		},
+		core_http_server.NewRoute(
+			http.MethodPost,
+			"/register",
+			h.Register,
+			nil,
+		),
+		core_http_server.NewRoute(
+			http.MethodPost,
+			"/login",
+			h.Login,
+			nil,
+		),
+		core_http_server.NewRoute(
+			http.MethodPost,
+			"/refresh",
+			h.RefreshTokens,
+			nil,
+		),
 	}
 }

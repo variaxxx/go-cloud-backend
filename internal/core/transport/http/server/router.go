@@ -31,6 +31,5 @@ func (r *APIRouter) RegisterRoutes(routes ...Route) {
 
 		r.Handle(pattern, h)
 	}
-
 	r.routes = append(r.routes, routes...)
 }

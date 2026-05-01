@@ -2,7 +2,7 @@ package auth_http
 
 import "net/http"
 
-func (h *Handler) setRefreshTokenCookie(
+func (h *handler) setRefreshTokenCookie(
 	rw http.ResponseWriter,
 	refreshToken string,
 ) {

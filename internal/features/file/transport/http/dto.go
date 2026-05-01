@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type FileDTO struct {
+type fileDTO struct {
 	ID        uuid.UUID  `json:"id"`
 	Filename  string     `json:"filename"`
 	Mimetype  *string    `json:"mimetype,omitempty"`
@@ -18,8 +18,8 @@ type FileDTO struct {
 	UpdatedAt string     `json:"updated_at"`
 }
 
-func NewFileDTO(file file_domain.File) FileDTO {
-	return FileDTO{
+func NewFileDTO(file file_domain.File) fileDTO {
+	return fileDTO{
 		ID:        file.ID,
 		Filename:  file.Filename,
 		Mimetype:  file.Mimetype,
@@ -31,8 +31,8 @@ func NewFileDTO(file file_domain.File) FileDTO {
 	}
 }
 
-func NewFileDTOs(files []file_domain.File) []FileDTO {
-	dtos := make([]FileDTO, 0, len(files))
+func NewFileDTOs(files []file_domain.File) []fileDTO {
+	dtos := make([]fileDTO, 0, len(files))
 	for _, file := range files {
 		dtos = append(dtos, NewFileDTO(file))
 	}

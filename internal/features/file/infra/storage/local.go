@@ -10,19 +10,19 @@ import (
 	"github.com/google/uuid"
 )
 
-type LocalFileStorage struct {
+type localFileStorage struct {
 	baseDir string
 }
 
 func NewLocalFileStorage(
 	baseDir string,
-) *LocalFileStorage {
-	return &LocalFileStorage{
+) *localFileStorage {
+	return &localFileStorage{
 		baseDir: baseDir,
 	}
 }
 
-func (s *LocalFileStorage) Save(
+func (s *localFileStorage) Save(
 	ctx context.Context,
 	filename string,
 	src io.Reader,
@@ -50,7 +50,7 @@ func (s *LocalFileStorage) Save(
 	return relativePath, nil
 }
 
-func (s *LocalFileStorage) Delete(
+func (s *localFileStorage) Delete(
 	ctx context.Context,
 	path string,
 ) error {
@@ -62,7 +62,7 @@ func (s *LocalFileStorage) Delete(
 	return nil
 }
 
-func (s *LocalFileStorage) Open(
+func (s *localFileStorage) Open(
 	ctx context.Context,
 	path string,
 ) (io.ReadCloser, error) {

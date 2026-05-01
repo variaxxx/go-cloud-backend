@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type RefreshTokenService struct {
+type refreshTokenService struct {
 	repository auth_domain.RefreshTokenRepository
 	hasher     auth_domain.RefreshTokenHasher
 	refreshTTL time.Duration
@@ -19,15 +19,15 @@ func NewRefreshTokenService(
 	repository auth_domain.RefreshTokenRepository,
 	hasher auth_domain.RefreshTokenHasher,
 	refreshTTL time.Duration,
-) *RefreshTokenService {
-	return &RefreshTokenService{
+) *refreshTokenService {
+	return &refreshTokenService{
 		repository: repository,
 		hasher:     hasher,
 		refreshTTL: refreshTTL,
 	}
 }
 
-func (s *RefreshTokenService) Issue(
+func (s *refreshTokenService) Issue(
 	ctx context.Context,
 	userId int64,
 ) (string, error) {
@@ -53,7 +53,7 @@ func (s *RefreshTokenService) Issue(
 	return token, nil
 }
 
-func (s *RefreshTokenService) ReplaceOld(
+func (s *refreshTokenService) ReplaceOld(
 	ctx context.Context,
 	oldToken string,
 ) (string, auth_domain.RefreshToken, error) {
@@ -75,7 +75,7 @@ func (s *RefreshTokenService) ReplaceOld(
 	return newToken, newTokenInfo, nil
 }
 
-func (s *RefreshTokenService) generateToken() (string, error) {
+func (s *refreshTokenService) generateToken() (string, error) {
 	b := make([]byte, 32)
 
 	if _, err := rand.Read(b); err != nil {

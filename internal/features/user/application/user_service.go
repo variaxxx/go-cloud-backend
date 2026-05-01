@@ -6,19 +6,19 @@ import (
 	"fmt"
 )
 
-type UserService struct {
+type userService struct {
 	userRepo user_domain.UserRepository
 }
 
 func NewUserService(
 	userRepo user_domain.UserRepository,
-) *UserService {
-	return &UserService{
+) *userService {
+	return &userService{
 		userRepo: userRepo,
 	}
 }
 
-func (s *UserService) GetMe(
+func (s *userService) GetMe(
 	ctx context.Context,
 	userID int64,
 ) (user_domain.User, error) {

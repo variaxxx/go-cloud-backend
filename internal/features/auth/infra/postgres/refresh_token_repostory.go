@@ -13,7 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type RefreshTokenRepository struct {
+type refreshTokenRepository struct {
 	pool infra_postgres.Pool
 }
 
@@ -23,13 +23,13 @@ type queryRowScanner interface {
 
 func NewRefreshTokenRepository(
 	pool infra_postgres.Pool,
-) *RefreshTokenRepository {
-	return &RefreshTokenRepository{
+) *refreshTokenRepository {
+	return &refreshTokenRepository{
 		pool: pool,
 	}
 }
 
-func (r *RefreshTokenRepository) Create(
+func (r *refreshTokenRepository) Create(
 	ctx context.Context,
 	userID int64,
 	expiresAt time.Time,
@@ -62,7 +62,7 @@ func (r *RefreshTokenRepository) Create(
 	return token, nil
 }
 
-func (r *RefreshTokenRepository) Revoke(
+func (r *refreshTokenRepository) Revoke(
 	ctx context.Context,
 	tokenHash string,
 	replacedByID *int64,
@@ -92,7 +92,7 @@ func (r *RefreshTokenRepository) Revoke(
 	return token, nil
 }
 
-func (r *RefreshTokenRepository) Rotate(
+func (r *refreshTokenRepository) Rotate(
 	ctx context.Context,
 	oldTokenHash string,
 	newTokenHash string,

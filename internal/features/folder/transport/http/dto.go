@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type FolderDTO struct {
+type folderDTO struct {
 	ID        uuid.UUID  `json:"id"`
 	Name      string     `json:"name"`
 	ParentID  *uuid.UUID `json:"parent_id,omitempty"`
@@ -16,8 +16,8 @@ type FolderDTO struct {
 	UpdatedAt string     `json:"updated_at"`
 }
 
-func NewFolderDTO(folder folder_domain.Folder) FolderDTO {
-	return FolderDTO{
+func NewFolderDTO(folder folder_domain.Folder) folderDTO {
+	return folderDTO{
 		ID:        folder.ID,
 		Name:      folder.Name,
 		ParentID:  folder.ParentID,
@@ -26,8 +26,8 @@ func NewFolderDTO(folder folder_domain.Folder) FolderDTO {
 	}
 }
 
-func NewFolderDTOs(folders []folder_domain.Folder) []FolderDTO {
-	dtos := make([]FolderDTO, 0, len(folders))
+func NewFolderDTOs(folders []folder_domain.Folder) []folderDTO {
+	dtos := make([]folderDTO, 0, len(folders))
 	for _, folder := range folders {
 		dtos = append(dtos, NewFolderDTO(folder))
 	}
@@ -35,7 +35,7 @@ func NewFolderDTOs(folders []folder_domain.Folder) []FolderDTO {
 	return dtos
 }
 
-type FileDTOView struct {
+type fileDTOView struct {
 	ID        uuid.UUID `json:"id"`
 	Filename  string    `json:"filename"`
 	Mimetype  *string   `json:"mimetype,omitempty"`
@@ -45,8 +45,8 @@ type FileDTOView struct {
 	UpdatedAt string    `json:"updated_at"`
 }
 
-func NewFileDTOView(file file_domain.File) FileDTOView {
-	return FileDTOView{
+func NewFileDTOView(file file_domain.File) fileDTOView {
+	return fileDTOView{
 		ID:        file.ID,
 		Filename:  file.Filename,
 		Mimetype:  file.Mimetype,
@@ -57,8 +57,8 @@ func NewFileDTOView(file file_domain.File) FileDTOView {
 	}
 }
 
-func NewFileDTOViews(files []file_domain.File) []FileDTOView {
-	dtos := make([]FileDTOView, 0, len(files))
+func NewFileDTOViews(files []file_domain.File) []fileDTOView {
+	dtos := make([]fileDTOView, 0, len(files))
 	for _, file := range files {
 		dtos = append(dtos, NewFileDTOView(file))
 	}

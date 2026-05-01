@@ -13,22 +13,22 @@ type Config struct {
 }
 
 func NewConfig() (Config, error) {
-	var config Config
+	var cfg Config
 
-	if err := envconfig.Process("HTTP", &config); err != nil {
+	if err := envconfig.Process("HTTP", &cfg); err != nil {
 		return Config{}, fmt.Errorf("HTTP server config parse: %w", err)
 	}
 
-	return config, nil
+	return cfg, nil
 }
 
 func NewConfigRequired() Config {
-	config, err := NewConfig()
+	cfg, err := NewConfig()
 
 	if err != nil {
 		err = fmt.Errorf("HTTP server config parse: %w", err)
 		panic(err)
 	}
 
-	return config
+	return cfg
 }

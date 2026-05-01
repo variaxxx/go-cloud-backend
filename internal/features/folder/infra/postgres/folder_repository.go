@@ -13,19 +13,19 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type FolderRepository struct {
+type folderRepository struct {
 	pool infra_postgres.Pool
 }
 
 func NewFolderRepository(
 	pool infra_postgres.Pool,
-) *FolderRepository {
-	return &FolderRepository{
+) *folderRepository {
+	return &folderRepository{
 		pool: pool,
 	}
 }
 
-func (r *FolderRepository) Create(
+func (r *folderRepository) Create(
 	ctx context.Context,
 	name string,
 	userID int64,
@@ -66,7 +66,7 @@ func (r *FolderRepository) Create(
 	return folder, nil
 }
 
-func (r *FolderRepository) Update(
+func (r *folderRepository) Update(
 	ctx context.Context,
 	id uuid.UUID,
 	userID int64,
@@ -111,7 +111,7 @@ func (r *FolderRepository) Update(
 	return folder, nil
 }
 
-func (r *FolderRepository) FindByIDAndUserID(
+func (r *folderRepository) FindByIDAndUserID(
 	ctx context.Context,
 	id uuid.UUID,
 	userID int64,
@@ -148,7 +148,7 @@ func (r *FolderRepository) FindByIDAndUserID(
 	return folder, nil
 }
 
-func (r *FolderRepository) FindByIDAndUserIDWithPath(
+func (r *folderRepository) FindByIDAndUserIDWithPath(
 	ctx context.Context,
 	id uuid.UUID,
 	userID int64,
@@ -206,7 +206,7 @@ func (r *FolderRepository) FindByIDAndUserIDWithPath(
 	return folder, path, nil
 }
 
-func (r *FolderRepository) FindByParentIDAndUserID(
+func (r *folderRepository) FindByParentIDAndUserID(
 	ctx context.Context,
 	parentID *uuid.UUID,
 	userID int64,
@@ -262,7 +262,7 @@ func (r *FolderRepository) FindByParentIDAndUserID(
 	return folders, nil
 }
 
-func (r *FolderRepository) WouldCreateCycle(
+func (r *folderRepository) WouldCreateCycle(
 	ctx context.Context,
 	id uuid.UUID,
 	parentID uuid.UUID,
@@ -299,7 +299,7 @@ func (r *FolderRepository) WouldCreateCycle(
 	return wouldCreateCycle, nil
 }
 
-func (r *FolderRepository) Delete(
+func (r *folderRepository) Delete(
 	ctx context.Context,
 	id uuid.UUID,
 ) error {

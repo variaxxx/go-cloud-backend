@@ -18,9 +18,9 @@ type CreateRequest struct {
 	ParentID *uuid.UUID `json:"parent_id"`
 }
 
-type CreateResponse = FolderDTO
+type CreateResponse = folderDTO
 
-func (h *Handler) Create(rw http.ResponseWriter, r *http.Request) {
+func (h *handler) Create(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
 	rh := core_http_response.NewHTTPResponseHandler(log, rw)
 

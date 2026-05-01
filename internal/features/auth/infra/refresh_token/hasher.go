@@ -5,13 +5,13 @@ import (
 	"encoding/hex"
 )
 
-type Hasher struct{}
+type hasher struct{}
 
-func NewHasher() *Hasher {
-	return &Hasher{}
+func NewHasher() *hasher {
+	return &hasher{}
 }
 
-func (h *Hasher) Hash(token string) string {
+func (h *hasher) Hash(token string) string {
 	sum := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(sum[:])
 }

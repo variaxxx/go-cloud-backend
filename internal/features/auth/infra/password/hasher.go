@@ -2,13 +2,13 @@ package auth_password
 
 import "golang.org/x/crypto/bcrypt"
 
-type Hasher struct{}
+type hasher struct{}
 
-func NewHasher() *Hasher {
-	return &Hasher{}
+func NewHasher() *hasher {
+	return &hasher{}
 }
 
-func (h *Hasher) Hash(
+func (h *hasher) Hash(
 	password string,
 ) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -18,7 +18,7 @@ func (h *Hasher) Hash(
 	return string(bytes), nil
 }
 
-func (h *Hasher) Compare(
+func (h *hasher) Compare(
 	hash string,
 	password string,
 ) error {

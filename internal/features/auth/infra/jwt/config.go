@@ -7,17 +7,17 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-type Config struct {
+type config struct {
 	Secret string        `envconfig:"SECRET" required:"true"`
 	Ttl    time.Duration `envconfig:"TTL" required:"true"`
 }
 
-func NewConfig() (Config, error) {
-	var config Config
+func NewConfig() (config, error) {
+	var cfg config
 
-	if err := envconfig.Process("JWT", &config); err != nil {
-		return Config{}, fmt.Errorf("JWT config parse: %w", err)
+	if err := envconfig.Process("JWT", &cfg); err != nil {
+		return config{}, fmt.Errorf("JWT config parse: %w", err)
 	}
 
-	return config, nil
+	return cfg, nil
 }

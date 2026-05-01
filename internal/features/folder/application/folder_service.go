@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type FolderService struct {
+type folderService struct {
 	folderRepo folder_domain.FolderRepository
 	fileRepo   file_domain.FileRepository
 	storage    file_domain.FileStorage
@@ -21,15 +21,15 @@ func NewFolderService(
 	folderRepo folder_domain.FolderRepository,
 	fileRepo file_domain.FileRepository,
 	storage file_domain.FileStorage,
-) *FolderService {
-	return &FolderService{
+) *folderService {
+	return &folderService{
 		folderRepo: folderRepo,
 		fileRepo:   fileRepo,
 		storage:    storage,
 	}
 }
 
-func (s *FolderService) Create(
+func (s *folderService) Create(
 	ctx context.Context,
 	params CreateFolderParams,
 ) (folder_domain.Folder, error) {
@@ -52,7 +52,7 @@ func (s *FolderService) Create(
 	return folder, nil
 }
 
-func (s *FolderService) Edit(
+func (s *folderService) Edit(
 	ctx context.Context,
 	params EditFolderParams,
 ) (folder_domain.Folder, error) {
@@ -107,7 +107,7 @@ func (s *FolderService) Edit(
 	return updatedFolder, nil
 }
 
-func (s *FolderService) Delete(
+func (s *folderService) Delete(
 	ctx context.Context,
 	id uuid.UUID,
 	userID int64,
@@ -132,7 +132,7 @@ func (s *FolderService) Delete(
 	return nil
 }
 
-func (s *FolderService) GetContent(
+func (s *folderService) GetContent(
 	ctx context.Context,
 	userID int64,
 	folderID *uuid.UUID,

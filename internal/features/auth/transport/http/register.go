@@ -18,7 +18,7 @@ type RegisterResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
-func (h *Handler) Register(rw http.ResponseWriter, r *http.Request) {
+func (h *handler) Register(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
 	rh := core_http_response.NewHTTPResponseHandler(log, rw)
 

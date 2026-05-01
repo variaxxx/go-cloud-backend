@@ -12,11 +12,11 @@ type Config struct {
 }
 
 func NewConfig() (Config, error) {
-	var config Config
+	var cfg Config
 
-	if err := envconfig.Process("LOGGER", &config); err != nil {
+	if err := envconfig.Process("LOGGER", &cfg); err != nil {
 		return Config{}, fmt.Errorf("Logger config parse: %w", err)
 	}
 
-	return config, nil
+	return cfg, nil
 }

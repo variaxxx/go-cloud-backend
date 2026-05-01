@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func (h *Handler) Delete(rw http.ResponseWriter, r *http.Request) {
+func (h *handler) Delete(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
 	rh := core_http_response.NewHTTPResponseHandler(log, rw)
 

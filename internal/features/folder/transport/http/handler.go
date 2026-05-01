@@ -8,61 +8,51 @@ import (
 	"net/http"
 )
 
-type Handler struct {
+type handler struct {
 	folderService folder_app.FolderUseCase
 }
 
 func NewHandler(
 	folderService folder_app.FolderUseCase,
-) *Handler {
-	return &Handler{
+) *handler {
+	return &handler{
 		folderService: folderService,
 	}
 }
 
-func (h *Handler) Routes(
+func (h *handler) Routes(
 	tokenParser core_http_auth.TokenParser,
 ) []core_http_server.Route {
 	return []core_http_server.Route{
-		{
-			Method:  http.MethodGet,
-			Path:    "/content",
-			Handler: h.GetContent,
-			Middlewares: []core_http_middleware.Middleware{
-				core_http_auth.Middleware(tokenParser),
-			},
-		},
-		{
-			Method:  http.MethodGet,
-			Path:    "/{id}/content",
-			Handler: h.GetContent,
-			Middlewares: []core_http_middleware.Middleware{
-				core_http_auth.Middleware(tokenParser),
-			},
-		},
-		{
-			Method:  http.MethodPost,
-			Path:    "/",
-			Handler: h.Create,
-			Middlewares: []core_http_middleware.Middleware{
-				core_http_auth.Middleware(tokenParser),
-			},
-		},
-		{
-			Method:  http.MethodPatch,
-			Path:    "/{id}",
-			Handler: h.Edit,
-			Middlewares: []core_http_middleware.Middleware{
-				core_http_auth.Middleware(tokenParser),
-			},
-		},
-		{
-			Method:  http.MethodDelete,
-			Path:    "/{id}",
-			Handler: h.Delete,
-			Middlewares: []core_http_middleware.Middleware{
-				core_http_auth.Middleware(tokenParser),
-			},
-		},
+		core_http_server.NewRoute(
+			http.MethodGet,
+			"/content",
+			h.GetContent,
+			[]core_http_middleware.Middleware{core_http_auth.Middleware(tokenParser)},
+		),
+		core_http_server.NewRoute(
+			http.MethodGet,
+			"/{id}/content",
+			h.GetContent,
+			[]core_http_middleware.Middleware{core_http_auth.Middleware(tokenParser)},
+		),
+		core_http_server.NewRoute(
+			http.MethodPost,
+			"/",
+			h.Create,
+			[]core_http_middleware.Middleware{core_http_auth.Middleware(tokenParser)},
+		),
+		core_http_server.NewRoute(
+			http.MethodPatch,
+			"/{id}",
+			h.Edit,
+			[]core_http_middleware.Middleware{core_http_auth.Middleware(tokenParser)},
+		),
+		core_http_server.NewRoute(
+			http.MethodDelete,
+			"/{id}",
+			h.Delete,
+			[]core_http_middleware.Middleware{core_http_auth.Middleware(tokenParser)},
+		),
 	}
 }

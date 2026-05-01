@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-type AuthService struct {
+type authService struct {
 	userRepository user_domain.UserRepository
 	tokenManager   auth_domain.TokenManager
 	hasher         auth_domain.PasswordHasher
@@ -22,8 +22,8 @@ func NewAuthService(
 	tokenManager auth_domain.TokenManager,
 	hasher auth_domain.PasswordHasher,
 	refreshTokenService RefreshTokenUseCase,
-) *AuthService {
-	return &AuthService{
+) *authService {
+	return &authService{
 		userRepository:      userRepository,
 		tokenManager:        tokenManager,
 		hasher:              hasher,
@@ -36,7 +36,7 @@ type Tokens struct {
 	RefreshToken string
 }
 
-func (s *AuthService) Register(
+func (s *authService) Register(
 	ctx context.Context,
 	username string,
 	password string,
@@ -64,7 +64,7 @@ func (s *AuthService) Register(
 	return tokens, nil
 }
 
-func (s *AuthService) Login(
+func (s *authService) Login(
 	ctx context.Context,
 	username string,
 	password string,
@@ -91,7 +91,7 @@ func (s *AuthService) Login(
 	return tokens, nil
 }
 
-func (s *AuthService) RefreshTokens(
+func (s *authService) RefreshTokens(
 	ctx context.Context,
 	refreshToken string,
 ) (Tokens, error) {
@@ -111,7 +111,7 @@ func (s *AuthService) RefreshTokens(
 	}, nil
 }
 
-func (s *AuthService) issueTokens(
+func (s *authService) issueTokens(
 	ctx context.Context,
 	userID int64,
 ) (Tokens, error) {

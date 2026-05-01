@@ -8,53 +8,45 @@ import (
 	"net/http"
 )
 
-type Handler struct {
+type handler struct {
 	fileService file_app.FileUseCase
 }
 
 func NewHandler(
 	fileService file_app.FileUseCase,
-) *Handler {
-	return &Handler{
+) *handler {
+	return &handler{
 		fileService: fileService,
 	}
 }
 
-func (h *Handler) Routes(
+func (h *handler) Routes(
 	tokenParser core_http_auth.TokenParser,
 ) []core_http_server.Route {
 	return []core_http_server.Route{
-		{
-			Method:  http.MethodPost,
-			Path:    "/upload",
-			Handler: h.Upload,
-			Middlewares: []core_http_middleware.Middleware{
-				core_http_auth.Middleware(tokenParser),
-			},
-		},
-		{
-			Method:  http.MethodPatch,
-			Path:    "/{id}",
-			Handler: h.Edit,
-			Middlewares: []core_http_middleware.Middleware{
-				core_http_auth.Middleware(tokenParser),
-			},
-		},
-		{
-			Method:  http.MethodDelete,
-			Path:    "/{id}",
-			Handler: h.Delete,
-			Middlewares: []core_http_middleware.Middleware{
-				core_http_auth.Middleware(tokenParser),
-			},
-		},
-		{
-			Method:  http.MethodGet,
-			Path:    "/{id}/download",
-			Handler: h.Download,
-			Middlewares: []core_http_middleware.Middleware{
-				core_http_auth.Middleware(tokenParser),
-			},
-		},
+		core_http_server.NewRoute(
+			http.MethodPost,
+			"/upload",
+			h.Upload,
+			[]core_http_middleware.Middleware{core_http_auth.Middleware(tokenParser)},
+		),
+		core_http_server.NewRoute(
+			http.MethodPatch,
+			"/{id}",
+			h.Edit,
+			[]core_http_middleware.Middleware{core_http_auth.Middleware(tokenParser)},
+		),
+		core_http_server.NewRoute(
+			http.MethodDelete,
+			"/{id}",
+			h.Delete,
+			[]core_http_middleware.Middleware{core_http_auth.Middleware(tokenParser)},
+		),
+		core_http_server.NewRoute(
+			http.MethodGet,
+			"/{id}/download",
+			h.Download,
+			[]core_http_middleware.Middleware{core_http_auth.Middleware(tokenParser)},
+		),
 	}
 }
