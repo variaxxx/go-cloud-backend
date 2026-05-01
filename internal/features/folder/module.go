@@ -32,10 +32,10 @@ func Register(
 
 	folderRepo := folder_postgres.NewFolderRepository(deps.DB)
 	fileRepo := file_postgres.NewFileRepository(deps.DB)
-	storage := file_storage.NewLocalFileStorage(fileConfig.StorageDir)
-	service := folder_app.NewFolderService(folderRepo, fileRepo, storage)
+	fileStorage := file_storage.NewLocalFileStorage(fileConfig.StorageDir)
+	folderService := folder_app.NewFolderService(folderRepo, fileRepo, fileStorage)
 	tokenManager := auth_jwt.NewManager(jwtConfig)
-	handler := folder_http.NewHandler(service)
+	handler := folder_http.NewHandler(folderService)
 
 	deps.Router.RegisterRoutes(handler.Routes(tokenManager)...)
 	return nil
