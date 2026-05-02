@@ -1,4 +1,4 @@
-package hello_http
+package test_http
 
 import (
 	core_logger "cloud/internal/core/logger"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (h *helloHTTPHandler) GetHello(
+func (h *Handler) GetHello(
 	rw http.ResponseWriter,
 	r *http.Request,
 ) {
@@ -16,9 +16,7 @@ func (h *helloHTTPHandler) GetHello(
 	hello := h.service.GetHello()
 
 	rh.JSONResponse(
-		map[string]string{
-			"msg": hello,
-		},
+		hello,
 		http.StatusOK,
 	)
 }

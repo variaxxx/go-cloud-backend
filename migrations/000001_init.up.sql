@@ -61,3 +61,9 @@ CREATE TABLE cloud.refresh_tokens (
 
 CREATE INDEX idx_refresh_tokens_user_id ON cloud.refresh_tokens(user_id);
 CREATE INDEX idx_refresh_tokens_expires_at ON cloud.refresh_tokens(expires_at);
+
+CREATE TABLE cloud.test_strings (
+  id BIGSERIAL PRIMARY KEY,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  value TEXT NOT NULL
+);

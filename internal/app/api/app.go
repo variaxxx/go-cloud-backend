@@ -7,7 +7,7 @@ import (
 	"cloud/internal/features/auth"
 	"cloud/internal/features/file"
 	"cloud/internal/features/folder"
-	"cloud/internal/features/hello"
+	"cloud/internal/features/test"
 	"cloud/internal/features/user"
 	infra_postgres "cloud/internal/infra/postgres"
 	"context"
@@ -48,8 +48,14 @@ func New(
 		return nil, fmt.Errorf("db connection pool create: %w", err)
 	}
 
+	// Test endpoints for lab works
 	apiRouter := core_http_server.NewAPIRouter("")
-	hello.RegisterHTTP(apiRouter)
+	if err := test.Register(test.Deps{
+		Router: apiRouter,
+		DB:     db,
+	}); err != nil {
+		return nil, fmt.Errorf("test module init: %w", err)
+	}
 
 	authRouter := core_http_server.NewAPIRouter("/auth")
 	if err := auth.Register(auth.Deps{
