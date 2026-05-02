@@ -44,6 +44,22 @@ type FileRepository interface {
 		folderID *uuid.UUID,
 	) (File, error)
 
+	UpdateStatus(
+		ctx context.Context,
+		id uuid.UUID,
+		userID int64,
+		status FileStatus,
+	) (File, error)
+
+	UpdatePreview(
+		ctx context.Context,
+		id uuid.UUID,
+		userID int64,
+		status FileStatus,
+		previewPath *string,
+		previewMimetype *string,
+	) (File, error)
+
 	Delete(
 		ctx context.Context,
 		id uuid.UUID,

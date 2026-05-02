@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -42,22 +41,24 @@ func (r *fileRepository) Create(
 	const query = `
 		INSERT INTO cloud.files (filename, mimetype, status, storage_path, size_bytes, user_id, folder_id)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
-		RETURNING id, created_at, updated_at, deleted_at, filename, mimetype, status, storage_path, size_bytes, user_id, folder_id;
+		RETURNING id, created_at, updated_at, filename, mimetype, status, storage_path, preview_path, preview_mimetype, size_bytes, user_id, folder_id;
 	`
 
 	var file file_domain.File
-	var deletedAt *time.Time
 	var dbMimetype *string
+	var dbPreviewPath *string
+	var dbPreviewMime *string
 	var dbFolderID *uuid.UUID
 	if err := r.pool.QueryRow(ctx, query, filename, mimetype, status, storagePath, sizeBytes, userID, folderID).Scan(
 		&file.ID,
 		&file.CreatedAt,
 		&file.UpdatedAt,
-		&deletedAt,
 		&file.Filename,
 		&dbMimetype,
 		&file.Status,
 		&file.StoragePath,
+		&dbPreviewPath,
+		&dbPreviewMime,
 		&file.SizeBytes,
 		&file.UserID,
 		&dbFolderID,
@@ -73,8 +74,9 @@ func (r *fileRepository) Create(
 		}
 	}
 
-	file.DeletedAt = deletedAt
 	file.Mimetype = dbMimetype
+	file.PreviewPath = dbPreviewPath
+	file.PreviewMime = dbPreviewMime
 	file.FolderID = dbFolderID
 
 	return file, nil
@@ -89,9 +91,9 @@ func (r *fileRepository) FindByFolderIDAndUserID(
 	defer cancel()
 
 	query := `
-		SELECT id, created_at, updated_at, deleted_at, filename, mimetype, status, storage_path, size_bytes, user_id, folder_id
+		SELECT id, created_at, updated_at, filename, mimetype, status, storage_path, preview_path, preview_mimetype, size_bytes, user_id, folder_id
 		FROM cloud.files
-		WHERE user_id = $1 AND deleted_at IS NULL
+		WHERE user_id = $1
 	`
 	args := []any{userID}
 
@@ -113,18 +115,20 @@ func (r *fileRepository) FindByFolderIDAndUserID(
 	files := make([]file_domain.File, 0)
 	for rows.Next() {
 		var file file_domain.File
-		var deletedAt *time.Time
 		var dbMimetype *string
+		var dbPreviewPath *string
+		var dbPreviewMime *string
 		var dbFolderID *uuid.UUID
 		if err := rows.Scan(
 			&file.ID,
 			&file.CreatedAt,
 			&file.UpdatedAt,
-			&deletedAt,
 			&file.Filename,
 			&dbMimetype,
 			&file.Status,
 			&file.StoragePath,
+			&dbPreviewPath,
+			&dbPreviewMime,
 			&file.SizeBytes,
 			&file.UserID,
 			&dbFolderID,
@@ -132,8 +136,9 @@ func (r *fileRepository) FindByFolderIDAndUserID(
 			return nil, fmt.Errorf("scan file row: %w", err)
 		}
 
-		file.DeletedAt = deletedAt
 		file.Mimetype = dbMimetype
+		file.PreviewPath = dbPreviewPath
+		file.PreviewMime = dbPreviewMime
 		file.FolderID = dbFolderID
 		files = append(files, file)
 	}
@@ -166,10 +171,9 @@ func (r *fileRepository) FindByFolderTreeAndUserID(
 			JOIN folder_tree parent ON child.parent_id = parent.id
 			WHERE child.user_id = $2
 		)
-		SELECT id, created_at, updated_at, deleted_at, filename, mimetype, status, storage_path, size_bytes, user_id, folder_id
+		SELECT id, created_at, updated_at, filename, mimetype, status, storage_path, preview_path, preview_mimetype, size_bytes, user_id, folder_id
 		FROM cloud.files
 		WHERE user_id = $2
-		  AND deleted_at IS NULL
 		  AND folder_id IN (SELECT id FROM folder_tree)
 		ORDER BY filename;
 	`
@@ -183,18 +187,20 @@ func (r *fileRepository) FindByFolderTreeAndUserID(
 	files := make([]file_domain.File, 0)
 	for rows.Next() {
 		var file file_domain.File
-		var deletedAt *time.Time
 		var dbMimetype *string
+		var dbPreviewPath *string
+		var dbPreviewMime *string
 		var dbFolderID *uuid.UUID
 		if err := rows.Scan(
 			&file.ID,
 			&file.CreatedAt,
 			&file.UpdatedAt,
-			&deletedAt,
 			&file.Filename,
 			&dbMimetype,
 			&file.Status,
 			&file.StoragePath,
+			&dbPreviewPath,
+			&dbPreviewMime,
 			&file.SizeBytes,
 			&file.UserID,
 			&dbFolderID,
@@ -202,8 +208,9 @@ func (r *fileRepository) FindByFolderTreeAndUserID(
 			return nil, fmt.Errorf("scan file row from folder tree: %w", err)
 		}
 
-		file.DeletedAt = deletedAt
 		file.Mimetype = dbMimetype
+		file.PreviewPath = dbPreviewPath
+		file.PreviewMime = dbPreviewMime
 		file.FolderID = dbFolderID
 		files = append(files, file)
 	}
@@ -224,24 +231,26 @@ func (r *fileRepository) FindByIDAndUserID(
 	defer cancel()
 
 	const query = `
-		SELECT id, created_at, updated_at, deleted_at, filename, mimetype, status, storage_path, size_bytes, user_id, folder_id
+		SELECT id, created_at, updated_at, filename, mimetype, status, storage_path, preview_path, preview_mimetype, size_bytes, user_id, folder_id
 		FROM cloud.files
-		WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL;
+		WHERE id = $1 AND user_id = $2;
 	`
 
 	var file file_domain.File
-	var deletedAt *time.Time
 	var dbMimetype *string
+	var dbPreviewPath *string
+	var dbPreviewMime *string
 	var dbFolderID *uuid.UUID
 	if err := r.pool.QueryRow(ctx, query, id, userID).Scan(
 		&file.ID,
 		&file.CreatedAt,
 		&file.UpdatedAt,
-		&deletedAt,
 		&file.Filename,
 		&dbMimetype,
 		&file.Status,
 		&file.StoragePath,
+		&dbPreviewPath,
+		&dbPreviewMime,
 		&file.SizeBytes,
 		&file.UserID,
 		&dbFolderID,
@@ -254,8 +263,9 @@ func (r *fileRepository) FindByIDAndUserID(
 		}
 	}
 
-	file.DeletedAt = deletedAt
 	file.Mimetype = dbMimetype
+	file.PreviewPath = dbPreviewPath
+	file.PreviewMime = dbPreviewMime
 	file.FolderID = dbFolderID
 
 	return file, nil
@@ -298,23 +308,25 @@ func (r *fileRepository) Update(
 	const query = `
 		UPDATE cloud.files
 		SET filename = $3, folder_id = $4, updated_at = NOW()
-		WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
-		RETURNING id, created_at, updated_at, deleted_at, filename, mimetype, status, storage_path, size_bytes, user_id, folder_id;
+		WHERE id = $1 AND user_id = $2
+		RETURNING id, created_at, updated_at, filename, mimetype, status, storage_path, preview_path, preview_mimetype, size_bytes, user_id, folder_id;
 	`
 
 	var file file_domain.File
-	var deletedAt *time.Time
 	var dbMimetype *string
+	var dbPreviewPath *string
+	var dbPreviewMime *string
 	var dbFolderID *uuid.UUID
 	if err := r.pool.QueryRow(ctx, query, id, userID, filename, folderID).Scan(
 		&file.ID,
 		&file.CreatedAt,
 		&file.UpdatedAt,
-		&deletedAt,
 		&file.Filename,
 		&dbMimetype,
 		&file.Status,
 		&file.StoragePath,
+		&dbPreviewPath,
+		&dbPreviewMime,
 		&file.SizeBytes,
 		&file.UserID,
 		&dbFolderID,
@@ -332,8 +344,119 @@ func (r *fileRepository) Update(
 		}
 	}
 
-	file.DeletedAt = deletedAt
 	file.Mimetype = dbMimetype
+	file.PreviewPath = dbPreviewPath
+	file.PreviewMime = dbPreviewMime
+	file.FolderID = dbFolderID
+
+	return file, nil
+}
+
+func (r *fileRepository) UpdateStatus(
+	ctx context.Context,
+	id uuid.UUID,
+	userID int64,
+	status file_domain.FileStatus,
+) (file_domain.File, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
+	defer cancel()
+
+	const query = `
+		UPDATE cloud.files
+		SET status = $3, updated_at = NOW()
+		WHERE id = $1 AND user_id = $2
+		RETURNING id, created_at, updated_at, filename, mimetype, status, storage_path, preview_path, preview_mimetype, size_bytes, user_id, folder_id;
+	`
+
+	var file file_domain.File
+	var dbMimetype *string
+	var dbPreviewPath *string
+	var dbPreviewMime *string
+	var dbFolderID *uuid.UUID
+	if err := r.pool.QueryRow(ctx, query, id, userID, status).Scan(
+		&file.ID,
+		&file.CreatedAt,
+		&file.UpdatedAt,
+		&file.Filename,
+		&dbMimetype,
+		&file.Status,
+		&file.StoragePath,
+		&dbPreviewPath,
+		&dbPreviewMime,
+		&file.SizeBytes,
+		&file.UserID,
+		&dbFolderID,
+	); err != nil {
+		var pgErr *pgconn.PgError
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return file_domain.File{}, fmt.Errorf("update file status: %w", core_errors.ErrNotFound)
+		case errors.As(err, &pgErr) && pgErr.Code == "22P02":
+			return file_domain.File{}, fmt.Errorf("update file status: %w", core_errors.ErrInvalidArgument)
+		default:
+			return file_domain.File{}, fmt.Errorf("update file status: %w", err)
+		}
+	}
+
+	file.Mimetype = dbMimetype
+	file.PreviewPath = dbPreviewPath
+	file.PreviewMime = dbPreviewMime
+	file.FolderID = dbFolderID
+
+	return file, nil
+}
+
+func (r *fileRepository) UpdatePreview(
+	ctx context.Context,
+	id uuid.UUID,
+	userID int64,
+	status file_domain.FileStatus,
+	previewPath *string,
+	previewMimetype *string,
+) (file_domain.File, error) {
+	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
+	defer cancel()
+
+	const query = `
+		UPDATE cloud.files
+		SET status = $3, preview_path = $4, preview_mimetype = $5, updated_at = NOW()
+		WHERE id = $1 AND user_id = $2
+		RETURNING id, created_at, updated_at, filename, mimetype, status, storage_path, preview_path, preview_mimetype, size_bytes, user_id, folder_id;
+	`
+
+	var file file_domain.File
+	var dbMimetype *string
+	var dbPreviewPath *string
+	var dbPreviewMime *string
+	var dbFolderID *uuid.UUID
+	if err := r.pool.QueryRow(ctx, query, id, userID, status, previewPath, previewMimetype).Scan(
+		&file.ID,
+		&file.CreatedAt,
+		&file.UpdatedAt,
+		&file.Filename,
+		&dbMimetype,
+		&file.Status,
+		&file.StoragePath,
+		&dbPreviewPath,
+		&dbPreviewMime,
+		&file.SizeBytes,
+		&file.UserID,
+		&dbFolderID,
+	); err != nil {
+		var pgErr *pgconn.PgError
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return file_domain.File{}, fmt.Errorf("update file preview: %w", core_errors.ErrNotFound)
+		case errors.As(err, &pgErr) && pgErr.Code == "22P02":
+			return file_domain.File{}, fmt.Errorf("update file preview: %w", core_errors.ErrInvalidArgument)
+		default:
+			return file_domain.File{}, fmt.Errorf("update file preview: %w", err)
+		}
+	}
+
+	file.Mimetype = dbMimetype
+	file.PreviewPath = dbPreviewPath
+	file.PreviewMime = dbPreviewMime
 	file.FolderID = dbFolderID
 
 	return file, nil

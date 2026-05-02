@@ -11,6 +11,8 @@
 go mod download
 ```
 
+install pdftoppm!!!
+
 2. Создайте файл `.env` в корне проекта:
 
 ```bash

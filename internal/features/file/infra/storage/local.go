@@ -50,6 +50,30 @@ func (s *localFileStorage) Save(
 	return relativePath, nil
 }
 
+func (s *localFileStorage) SaveAtPath(
+	ctx context.Context,
+	path string,
+	src io.Reader,
+) error {
+	fullPath := filepath.Join(s.baseDir, path)
+
+	if err := os.MkdirAll(filepath.Dir(fullPath), 0755); err != nil {
+		return fmt.Errorf("create storage dir: %w", err)
+	}
+
+	dst, err := os.Create(fullPath)
+	if err != nil {
+		return fmt.Errorf("create dest file: %w", err)
+	}
+	defer dst.Close()
+
+	if _, err := io.Copy(dst, src); err != nil {
+		return fmt.Errorf("copy file data: %w", err)
+	}
+
+	return nil
+}
+
 func (s *localFileStorage) Delete(
 	ctx context.Context,
 	path string,

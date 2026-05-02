@@ -19,8 +19,7 @@ func (h *handler) Upload(rw http.ResponseWriter, r *http.Request) {
 	log := core_logger.FromContext(r.Context())
 	rh := core_http_response.NewHTTPResponseHandler(log, rw)
 
-	// Size limit to 10MB
-	if err := r.ParseMultipartForm(10 << 20); err != nil {
+	if err := r.ParseMultipartForm(5 << 30); err != nil {
 		rh.ErrorResponse(
 			fmt.Errorf("%w: parse multipart form: %w", core_errors.ErrInvalidArgument, err),
 			"Request body must be multipart/form-data with a file field",

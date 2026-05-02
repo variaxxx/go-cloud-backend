@@ -12,6 +12,12 @@ type FileStorage interface {
 		src io.Reader,
 	) (path string, err error)
 
+	SaveAtPath(
+		ctx context.Context,
+		path string,
+		src io.Reader,
+	) error
+
 	Delete(
 		ctx context.Context,
 		path string,

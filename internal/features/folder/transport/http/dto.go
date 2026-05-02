@@ -36,24 +36,26 @@ func NewFolderDTOs(folders []folder_domain.Folder) []folderDTO {
 }
 
 type fileDTOView struct {
-	ID        uuid.UUID `json:"id"`
-	Filename  string    `json:"filename"`
-	Mimetype  *string   `json:"mimetype,omitempty"`
-	Status    string    `json:"status"`
-	SizeBytes int64     `json:"size_bytes"`
-	CreatedAt string    `json:"created_at"`
-	UpdatedAt string    `json:"updated_at"`
+	ID         uuid.UUID `json:"id"`
+	Filename   string    `json:"filename"`
+	Mimetype   *string   `json:"mimetype,omitempty"`
+	Status     string    `json:"status"`
+	SizeBytes  int64     `json:"size_bytes"`
+	HasPreview bool      `json:"has_preview"`
+	CreatedAt  string    `json:"created_at"`
+	UpdatedAt  string    `json:"updated_at"`
 }
 
 func NewFileDTOView(file file_domain.File) fileDTOView {
 	return fileDTOView{
-		ID:        file.ID,
-		Filename:  file.Filename,
-		Mimetype:  file.Mimetype,
-		Status:    string(file.Status),
-		SizeBytes: file.SizeBytes,
-		CreatedAt: file.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: file.UpdatedAt.Format(time.RFC3339),
+		ID:         file.ID,
+		Filename:   file.Filename,
+		Mimetype:   file.Mimetype,
+		Status:     string(file.Status),
+		SizeBytes:  file.SizeBytes,
+		HasPreview: file.PreviewPath != nil,
+		CreatedAt:  file.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:  file.UpdatedAt.Format(time.RFC3339),
 	}
 }
 

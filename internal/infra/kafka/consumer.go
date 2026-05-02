@@ -89,16 +89,17 @@ func (c *KafkaConsumer) Run(
 			}
 		}
 
+		fields := []zap.Field{
+			zap.String("topic", msg.Topic),
+			zap.Int("partition", msg.Partition),
+			zap.Int64("offset", msg.Offset),
+		}
+
 		if err := handler.Handle(ctx, message); err != nil {
-			fields := []zap.Field{
-				zap.String("topic", msg.Topic),
-				zap.Int("partition", msg.Partition),
-				zap.Int64("offset", msg.Offset),
-				zap.Error(err),
-			}
+			errFields := append(fields, zap.Error(err))
 
 			if IsNonRetryableError(err) {
-				log.Warn("Skipping non-retryable message", fields...)
+				log.Warn("Skipping non-retryable message", errFields...)
 
 				if err := c.reader.CommitMessages(ctx, msg); err != nil {
 					return fmt.Errorf("commit non-retryable kafka message: %w", err)
@@ -107,13 +108,15 @@ func (c *KafkaConsumer) Run(
 				continue
 			}
 
-			log.Error("Failed to process message", fields...)
+			log.Error("Failed to process message", errFields...)
 			continue
 		}
 
 		if err := c.reader.CommitMessages(ctx, msg); err != nil {
 			return fmt.Errorf("commit kafka message: %w", err)
 		}
+
+		log.Debug("Processed message", fields...)
 	}
 }
 
