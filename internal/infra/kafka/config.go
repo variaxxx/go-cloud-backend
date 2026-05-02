@@ -13,6 +13,7 @@ type config struct {
 	BatchTimeout time.Duration `envconfig:"BATCH_TIMEOUT" default:"1s"`
 	WriteTimeout time.Duration `envconfig:"WRITE_TIMEOUT" default:"10s"`
 	ReadTimeout  time.Duration `envconfig:"READ_TIMEOUT" default:"10s"`
+	MaxWait      time.Duration `envconfig:"MAX_WAIT" default:"1s"`
 }
 
 func NewConfig() (config, error) {

@@ -9,6 +9,7 @@ import (
 type config struct {
 	TopicFileUploaded           string `envconfig:"TOPIC_FILE_UPLOADED" default:"file.uploaded"`
 	TopicFileUploadedPartitions int    `envconfig:"TOPIC_FILE_UPLOADED_PARTITIONS" default:"1"`
+	GroupFileUploaded           string `envconfig:"GROUP_FILE_UPLOADED" default:"file-uploaded-consumer"`
 }
 
 func NewConfig() (config, error) {
