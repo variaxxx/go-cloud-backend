@@ -5,10 +5,27 @@ infra-up:
 	@docker compose \
 		-f ./deploy/docker-compose.yml \
 		up -d \
-		postgres 
+		postgres \
+		kafka
+
+kafka-ui-up:
+	@docker compose \
+		-f ./deploy/docker-compose.yml \
+		up -d \
+		kafka-ui
 
 infra-down:
-	@docker compose down postgres
+	@docker compose \
+		-f ./deploy/docker-compose.yml \
+		stop \
+		postgres \
+		kafka
+
+kafka-ui-down:
+	@docker compose \
+		-f ./deploy/docker-compose.yml \
+		stop \
+		kafka-ui
 
 
 migrate-create:

@@ -7,7 +7,7 @@ services:
     environment:
       - POSTGRES_USER=${PG_USER:-postgres}
       - POSTGRES_PASSWORD=${PG_PASSWORD:-postgres}
-      - POSTGRES_DB=${PG_DB}
+      - POSTGRES_DB=${PG_DB:-cloud}
     networks:
       - backend
     healthcheck:
@@ -25,8 +25,46 @@ services:
     networks:
       - backend
 
+  kafka:
+    image: apache/kafka:4.1.2
+    restart: unless-stopped
+    hostname: kafka
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    environment:
+      - CLUSTER_ID=4L6g3nShT-eMCtK--X86sw
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,PLAINTEXT_HOST://:29092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+    networks:
+      - backend
+    ports:
+      - "29092:29092"
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-cluster-ui
+    ports:
+      - "9090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      - kafka
+    networks:
+      - backend
+
 networks:
   backend:
 
 volumes:
   postgres-data:
+  kafka-data:

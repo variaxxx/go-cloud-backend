@@ -12,20 +12,23 @@ import (
 )
 
 type fileService struct {
-	fileRepo   file_domain.FileRepository
-	storage    file_domain.FileStorage
-	folderRepo folder_domain.FolderRepository
+	fileRepo       file_domain.FileRepository
+	storage        file_domain.FileStorage
+	folderRepo     folder_domain.FolderRepository
+	eventPublisher FileEventPublisher
 }
 
 func NewFileService(
 	repository file_domain.FileRepository,
 	storage file_domain.FileStorage,
 	folders folder_domain.FolderRepository,
+	eventPublisher FileEventPublisher,
 ) *fileService {
 	return &fileService{
-		fileRepo:   repository,
-		storage:    storage,
-		folderRepo: folders,
+		fileRepo:       repository,
+		storage:        storage,
+		folderRepo:     folders,
+		eventPublisher: eventPublisher,
 	}
 }
 
@@ -66,7 +69,7 @@ func (s *fileService) Upload(
 		return file_domain.File{}, fmt.Errorf("create file record: %w", err)
 	}
 
-	// TODO: post msg to rmq
+	_ = s.eventPublisher.PublishUploaded(ctx, createdFile)
 
 	return createdFile, nil
 }
