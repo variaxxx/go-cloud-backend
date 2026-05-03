@@ -156,3 +156,28 @@ func (s *fileService) Download(
 		Content:  content,
 	}, nil
 }
+
+func (s *fileService) GetPreview(
+	ctx context.Context,
+	id uuid.UUID,
+	userID int64,
+) (FilePreview, error) {
+	file, err := s.fileRepo.FindByIDAndUserID(ctx, id, userID)
+	if err != nil {
+		return FilePreview{}, fmt.Errorf("find current file: %w", err)
+	}
+
+	if file.PreviewPath == nil {
+		return FilePreview{}, fmt.Errorf("find file preview: %w", core_errors.ErrNotFound)
+	}
+
+	content, err := s.storage.Open(ctx, *file.PreviewPath)
+	if err != nil {
+		return FilePreview{}, fmt.Errorf("open file preview: %w", err)
+	}
+
+	return FilePreview{
+		Mimetype: file.PreviewMime,
+		Content:  content,
+	}, nil
+}

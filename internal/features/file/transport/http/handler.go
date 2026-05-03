@@ -48,5 +48,11 @@ func (h *handler) Routes(
 			h.Download,
 			[]core_http_middleware.Middleware{core_http_auth.Middleware(tokenParser)},
 		),
+		core_http_server.NewRoute(
+			http.MethodGet,
+			"/{id}/preview",
+			h.GetPreview,
+			[]core_http_middleware.Middleware{core_http_auth.Middleware(tokenParser)},
+		),
 	}
 }

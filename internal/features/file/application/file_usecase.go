@@ -31,6 +31,11 @@ type DownloadFileResult struct {
 	Content  io.ReadCloser
 }
 
+type FilePreview struct {
+	Mimetype *string
+	Content  io.ReadCloser
+}
+
 type FileUseCase interface {
 	Upload(
 		ctx context.Context,
@@ -53,4 +58,10 @@ type FileUseCase interface {
 		id uuid.UUID,
 		userID int64,
 	) (DownloadFileResult, error)
+
+	GetPreview(
+		ctx context.Context,
+		id uuid.UUID,
+		userID int64,
+	) (FilePreview, error)
 }
