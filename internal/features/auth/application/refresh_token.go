@@ -9,6 +9,18 @@ import (
 	"time"
 )
 
+type RefreshTokenUseCase interface {
+	Issue(
+		ctx context.Context,
+		userID int64,
+	) (string, error)
+
+	ReplaceOld(
+		ctx context.Context,
+		oldToken string,
+	) (string, auth_domain.RefreshToken, error)
+}
+
 type refreshTokenService struct {
 	repository RefreshTokenRepository
 	hasher     RefreshTokenHasher
@@ -29,7 +41,7 @@ func NewRefreshTokenService(
 
 func (s *refreshTokenService) Issue(
 	ctx context.Context,
-	userId int64,
+	userID int64,
 ) (string, error) {
 	expiresAt := time.Now().Add(s.refreshTTL)
 
@@ -42,7 +54,7 @@ func (s *refreshTokenService) Issue(
 
 	_, err = s.repository.Create(
 		ctx,
-		userId,
+		userID,
 		expiresAt,
 		tokenHash,
 	)

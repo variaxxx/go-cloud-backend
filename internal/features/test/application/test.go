@@ -1,8 +1,15 @@
 package test_app
 
-import (
-	"context"
-)
+import "context"
+
+type TestUseCase interface {
+	GetHello() string
+
+	WriteStr(
+		ctx context.Context,
+		str string,
+	) error
+}
 
 type testService struct {
 	repository TestRepository

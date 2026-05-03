@@ -6,6 +6,13 @@ import (
 	"fmt"
 )
 
+type UserUseCase interface {
+	GetMe(
+		ctx context.Context,
+		userID int64,
+	) (user_domain.User, error)
+}
+
 type userService struct {
 	userRepo UserRepository
 }
