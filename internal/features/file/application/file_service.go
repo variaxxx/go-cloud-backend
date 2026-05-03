@@ -3,7 +3,6 @@ package file_app
 import (
 	core_errors "cloud/internal/core/errors"
 	file_domain "cloud/internal/features/file/domain"
-	folder_domain "cloud/internal/features/folder/domain"
 	"context"
 	"fmt"
 	"strings"
@@ -12,16 +11,16 @@ import (
 )
 
 type fileService struct {
-	fileRepo       file_domain.FileRepository
-	storage        file_domain.FileStorage
-	folderRepo     folder_domain.FolderRepository
+	fileRepo       FileRepository
+	storage        FileStorage
+	folderRepo     FolderRepository
 	eventPublisher FileEventPublisher
 }
 
 func NewFileService(
-	repository file_domain.FileRepository,
-	storage file_domain.FileStorage,
-	folders folder_domain.FolderRepository,
+	repository FileRepository,
+	storage FileStorage,
+	folders FolderRepository,
 	eventPublisher FileEventPublisher,
 ) *fileService {
 	return &fileService{

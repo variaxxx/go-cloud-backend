@@ -2,25 +2,23 @@ package auth_app
 
 import (
 	core_errors "cloud/internal/core/errors"
-	auth_domain "cloud/internal/features/auth/domain"
-	user_domain "cloud/internal/features/user/domain"
 	"context"
 	"fmt"
 	"strings"
 )
 
 type authService struct {
-	userRepository user_domain.UserRepository
-	tokenManager   auth_domain.TokenManager
-	hasher         auth_domain.PasswordHasher
+	userRepository UserRepository
+	tokenManager   TokenManager
+	hasher         PasswordHasher
 
 	refreshTokenService RefreshTokenUseCase
 }
 
 func NewAuthService(
-	userRepository user_domain.UserRepository,
-	tokenManager auth_domain.TokenManager,
-	hasher auth_domain.PasswordHasher,
+	userRepository UserRepository,
+	tokenManager TokenManager,
+	hasher PasswordHasher,
 	refreshTokenService RefreshTokenUseCase,
 ) *authService {
 	return &authService{

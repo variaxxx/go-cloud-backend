@@ -24,13 +24,13 @@ type FileUploadedEventHandler interface {
 }
 
 type fileUploadedEventHandler struct {
-	fileRepo file_domain.FileRepository
-	storage  file_domain.FileStorage
+	fileRepo FileRepository
+	storage  FileStorage
 }
 
 func NewFileUploadedEventHandler(
-	fileRepo file_domain.FileRepository,
-	storage file_domain.FileStorage,
+	fileRepo FileRepository,
+	storage FileStorage,
 ) *fileUploadedEventHandler {
 	return &fileUploadedEventHandler{
 		fileRepo: fileRepo,

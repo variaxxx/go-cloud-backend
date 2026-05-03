@@ -1,21 +1,24 @@
-package user_domain
+package user_app
 
-import "context"
+import (
+	user_domain "cloud/internal/features/user/domain"
+	"context"
+)
 
 type UserRepository interface {
 	Create(
 		ctx context.Context,
 		username string,
 		passwordHash string,
-	) (User, error)
+	) (user_domain.User, error)
 
 	FindByUsername(
 		ctx context.Context,
 		username string,
-	) (User, error)
+	) (user_domain.User, error)
 
 	FindByID(
 		ctx context.Context,
 		id int64,
-	) (User, error)
+	) (user_domain.User, error)
 }

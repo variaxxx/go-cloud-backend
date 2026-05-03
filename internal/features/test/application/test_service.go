@@ -1,16 +1,15 @@
 package test_app
 
 import (
-	test_domain "cloud/internal/features/test/domain"
 	"context"
 )
 
 type testService struct {
-	repository test_domain.TestRepository
+	repository TestRepository
 }
 
 func NewTestService(
-	repository test_domain.TestRepository,
+	repository TestRepository,
 ) *testService {
 	return &testService{
 		repository: repository,

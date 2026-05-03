@@ -2,7 +2,6 @@ package folder_app
 
 import (
 	core_errors "cloud/internal/core/errors"
-	file_domain "cloud/internal/features/file/domain"
 	folder_domain "cloud/internal/features/folder/domain"
 	"context"
 	"fmt"
@@ -12,15 +11,15 @@ import (
 )
 
 type folderService struct {
-	folderRepo folder_domain.FolderRepository
-	fileRepo   file_domain.FileRepository
-	storage    file_domain.FileStorage
+	folderRepo FolderRepository
+	fileRepo   FileRepository
+	storage    FileStorage
 }
 
 func NewFolderService(
-	folderRepo folder_domain.FolderRepository,
-	fileRepo file_domain.FileRepository,
-	storage file_domain.FileStorage,
+	folderRepo FolderRepository,
+	fileRepo FileRepository,
+	storage FileStorage,
 ) *folderService {
 	return &folderService{
 		folderRepo: folderRepo,

@@ -7,11 +7,11 @@ import (
 )
 
 type userService struct {
-	userRepo user_domain.UserRepository
+	userRepo UserRepository
 }
 
 func NewUserService(
-	userRepo user_domain.UserRepository,
+	userRepo UserRepository,
 ) *userService {
 	return &userService{
 		userRepo: userRepo,

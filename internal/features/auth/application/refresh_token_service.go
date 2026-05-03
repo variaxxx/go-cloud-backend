@@ -10,14 +10,14 @@ import (
 )
 
 type refreshTokenService struct {
-	repository auth_domain.RefreshTokenRepository
-	hasher     auth_domain.RefreshTokenHasher
+	repository RefreshTokenRepository
+	hasher     RefreshTokenHasher
 	refreshTTL time.Duration
 }
 
 func NewRefreshTokenService(
-	repository auth_domain.RefreshTokenRepository,
-	hasher auth_domain.RefreshTokenHasher,
+	repository RefreshTokenRepository,
+	hasher RefreshTokenHasher,
 	refreshTTL time.Duration,
 ) *refreshTokenService {
 	return &refreshTokenService{

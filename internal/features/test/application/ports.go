@@ -1,4 +1,4 @@
-package test_domain
+package test_app
 
 import "context"
 
