@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type FileUploadedEventHandler interface {
@@ -26,15 +27,18 @@ type FileUploadedEventHandler interface {
 type fileUploadedEventHandler struct {
 	fileRepo FileRepository
 	storage  FileStorage
+	metrics  FileMetrics
 }
 
 func NewFileUploadedEventHandler(
 	fileRepo FileRepository,
 	storage FileStorage,
+	metrics FileMetrics,
 ) *fileUploadedEventHandler {
 	return &fileUploadedEventHandler{
 		fileRepo: fileRepo,
 		storage:  storage,
+		metrics:  metrics,
 	}
 }
 
@@ -51,17 +55,28 @@ func (h *fileUploadedEventHandler) HandleUploaded(
 		return nil
 	}
 
+	startedAt := time.Now()
+	h.metrics.ProcessingStarted()
+
 	if !isPreviewSupported(file) {
 		_, err := h.fileRepo.UpdateStatus(ctx, file.ID, file.UserID, file_domain.FileStatusProcessed)
+		if err != nil {
+			h.metrics.ObserveProcessingFinished(FileProcessingResultFailed, time.Since(startedAt))
+			return err
+		}
+
+		h.metrics.ObserveProcessingFinished(FileProcessingResultSuccess, time.Since(startedAt))
 		return err
 	}
 
 	if err := h.createPreview(ctx, file); err != nil {
 		_, statusErr := h.fileRepo.UpdateStatus(ctx, file.ID, file.UserID, file_domain.FileStatusFailed)
 		if statusErr != nil {
+			h.metrics.ObserveProcessingFinished(FileProcessingResultFailed, time.Since(startedAt))
 			return statusErr
 		}
 
+		h.metrics.ObserveProcessingFinished(FileProcessingResultFailed, time.Since(startedAt))
 		return err
 	}
 
@@ -75,6 +90,12 @@ func (h *fileUploadedEventHandler) HandleUploaded(
 		&previewPath,
 		&previewMimetype,
 	)
+	if err != nil {
+		h.metrics.ObserveProcessingFinished(FileProcessingResultFailed, time.Since(startedAt))
+		return err
+	}
+
+	h.metrics.ObserveProcessingFinished(FileProcessingResultSuccess, time.Since(startedAt))
 	return err
 }
 

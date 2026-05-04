@@ -74,6 +74,7 @@ type fileService struct {
 	storage        FileStorage
 	folderRepo     FolderRepository
 	eventPublisher FileEventPublisher
+	metrics        FileMetrics
 }
 
 func NewFileService(
@@ -81,12 +82,14 @@ func NewFileService(
 	storage FileStorage,
 	folders FolderRepository,
 	eventPublisher FileEventPublisher,
+	metrics FileMetrics,
 ) *fileService {
 	return &fileService{
 		fileRepo:       repository,
 		storage:        storage,
 		folderRepo:     folders,
 		eventPublisher: eventPublisher,
+		metrics:        metrics,
 	}
 }
 
@@ -128,6 +131,7 @@ func (s *fileService) Upload(
 	}
 
 	_ = s.eventPublisher.PublishUploaded(ctx, createdFile)
+	s.metrics.UploadSucceeded(params.SizeBytes)
 
 	return createdFile, nil
 }

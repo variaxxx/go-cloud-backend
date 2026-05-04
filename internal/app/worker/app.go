@@ -1,9 +1,11 @@
 package app_worker
 
 import (
+	app_metrics "cloud/internal/app/metrics"
 	core_logger "cloud/internal/core/logger"
 	"cloud/internal/features/file"
 	infra_postgres "cloud/internal/infra/postgres"
+	obs_prometheus "cloud/internal/observability/prometheus"
 	"context"
 	"fmt"
 	"sync"
@@ -28,6 +30,11 @@ func New(
 		return nil, fmt.Errorf("load logger config: %w", err)
 	}
 
+	config, err := NewConfig()
+	if err != nil {
+		return nil, fmt.Errorf("load WORKER config: %w", err)
+	}
+
 	dbConfig, err := infra_postgres.NewConfig()
 	if err != nil {
 		return nil, fmt.Errorf("load DB config: %w", err)
@@ -43,18 +50,29 @@ func New(
 		return nil, fmt.Errorf("db connection pool create: %w", err)
 	}
 
+	observability := obs_prometheus.RegisterWorker()
+
 	fileUploadedWorker, err := file.NewUploadedWorker(file.WorkerDeps{
-		DB: db,
+		DB:            db,
+		Observability: observability,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("file uploaded worker init: %w", err)
 	}
+
+	metricsServer := app_metrics.NewServer(
+		config.MetricsAddr,
+		config.MetricsShutdownTimeout,
+		logger,
+		observability.Handler(),
+	)
 
 	return &App{
 		logger: logger,
 		dbPool: db,
 		runners: []runner{
 			fileUploadedWorker,
+			metricsServer,
 		},
 	}, nil
 }

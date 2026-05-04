@@ -1,8 +1,7 @@
-package app_api
+package app_metrics
 
 import (
 	core_logger "cloud/internal/core/logger"
-	obs_prometheus "cloud/internal/observability/prometheus"
 	"context"
 	"errors"
 	"fmt"
@@ -12,31 +11,29 @@ import (
 	"go.uber.org/zap"
 )
 
-type metricsServer struct {
+type Server struct {
 	logger          *core_logger.Logger
 	server          *http.Server
 	shutdownTimeout time.Duration
 }
 
-func newMetricsServer(
-	config Config,
+func NewServer(
+	addr string,
+	shutdownTimeout time.Duration,
 	logger *core_logger.Logger,
-	obs *obs_prometheus.Observability,
-) *metricsServer {
-	mux := http.NewServeMux()
-	mux.Handle("/metrics", obs.Handler())
-
-	return &metricsServer{
+	handler http.Handler,
+) *Server {
+	return &Server{
 		logger: logger,
 		server: &http.Server{
-			Addr:    config.MetricsAddr,
-			Handler: mux,
+			Addr:    addr,
+			Handler: handler,
 		},
-		shutdownTimeout: config.MetricsShutdownTimeout,
+		shutdownTimeout: shutdownTimeout,
 	}
 }
 
-func (s *metricsServer) Run(
+func (s *Server) Run(
 	ctx context.Context,
 ) error {
 	errCh := make(chan error, 1)
@@ -71,6 +68,16 @@ func (s *metricsServer) Run(
 		if err, ok := <-errCh; ok && err != nil {
 			return fmt.Errorf("metrics serve after shutdown: %w", err)
 		}
+	}
+
+	return nil
+}
+
+func (s *Server) Close() error {
+	if err := s.server.Close(); errors.Is(err, http.ErrServerClosed) {
+		return nil
+	} else if err != nil {
+		return fmt.Errorf("close metrics server: %w", err)
 	}
 
 	return nil

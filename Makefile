@@ -1,88 +1,108 @@
 include .env
 export
 
+COMPOSE_FILE=./deploy/docker-compose.yml
+DC=docker compose -f $(COMPOSE_FILE)
+
+.PHONY: \
+	up down \
+	infra-up infra-down \
+	api-up api-down api-build api-rebuild \
+	worker-up worker-down worker-build worker-rebuild \
+	prometheus-up prometheus-down \
+	kafka-ui-up kafka-ui-down \
+	logs-api logs-worker logs-prometheus logs-kafka \
+	migrate-create migrate-up migrate-down
+
+# Stack
+up:
+	@$(DC) up -d postgres kafka api worker prometheus
+
+down:
+	@$(DC) stop postgres kafka api worker prometheus
+
+# Infra
 infra-up:
-	@docker compose \
-		-f ./deploy/docker-compose.yml \
-		up -d \
-		postgres \
-		kafka
+	@$(DC) up -d postgres kafka
 
 kafka-ui-up:
-	@docker compose \
-		-f ./deploy/docker-compose.yml \
-		up -d \
-		kafka-ui
-
-prometheus-up:
-	@docker compose \
-		-f ./deploy/docker-compose.yml \
-		up -d \
-		prometheus
-
-api-up:
-	@docker compose \
-		-f ./deploy/docker-compose.yml \
-		up -d \
-		api
-
-api-build:
-	@docker compose \
-		-f ./deploy/docker-compose.yml \
-		build \
-		api
+	@$(DC) up -d kafka-ui
 
 infra-down:
-	@docker compose \
-		-f ./deploy/docker-compose.yml \
-		stop \
-		postgres \
-		kafka
+	@$(DC) stop postgres kafka
 
 kafka-ui-down:
-	@docker compose \
-		-f ./deploy/docker-compose.yml \
-		stop \
-		kafka-ui
+	@$(DC) stop kafka-ui
+
+# Observability
+prometheus-up:
+	@$(DC) up -d prometheus
 
 prometheus-down:
-	@docker compose \
-		-f ./deploy/docker-compose.yml \
-		stop \
-		prometheus
+	@$(DC) stop prometheus
 
+# API
+api-up:
+	@$(DC) up -d api
+
+api-build:
+	@$(DC) build api
+
+api-rebuild:
+	@$(DC) build api
+	@$(DC) up -d api
+
+# Worker
+worker-up:
+	@$(DC) up -d worker
+
+worker-build:
+	@$(DC) build worker
+
+worker-rebuild:
+	@$(DC) build worker
+	@$(DC) up -d worker
+
+# Logs
+logs-api:
+	@$(DC) logs -f api
+
+logs-worker:
+	@$(DC) logs -f worker
+
+logs-prometheus:
+	@$(DC) logs -f prometheus
+
+logs-kafka:
+	@$(DC) logs -f kafka
+
+# Stop services
 api-down:
-	@docker compose \
-		-f ./deploy/docker-compose.yml \
-		stop \
-		api
+	@$(DC) stop api
 
+worker-down:
+	@$(DC) stop worker
 
+# Migrations
 migrate-create:
 	@if [ -z "$(seq)" ]; then \
 		echo "Missing required argument 'seq'"; \
 		exit 1; \
 	fi; \
-	docker compose \
-		-f ./deploy/docker-compose.yml \
-		run --rm postgres-migrate \
+	$(DC) run --rm postgres-migrate \
 		create \
 		-ext sql \
 		-dir /migrations \
 		-seq "${seq}"
 
 migrate-up:
-	@docker compose \
-		-f ./deploy/docker-compose.yml \
-		run --rm postgres-migrate \
+	@$(DC) run --rm postgres-migrate \
 		-path /migrations \
 		-database postgres://${PG_USER}:${PG_PASSWORD}@postgres:5432/${PG_DB}?sslmode=disable \
 		up
 
 migrate-down:
-	@docker compose \
-		-f ./deploy/docker-compose.yml \
-		run --rm postgres-migrate \
+	@$(DC) run --rm postgres-migrate \
 		-path /migrations \
 		-database postgres://${PG_USER}:${PG_PASSWORD}@postgres:5432/${PG_DB}?sslmode=disable \
 		down

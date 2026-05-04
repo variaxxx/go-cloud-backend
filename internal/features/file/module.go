@@ -11,11 +11,13 @@ import (
 	folder_postgres "cloud/internal/features/folder/infra/postgres"
 	infra_kafka "cloud/internal/infra/kafka"
 	infra_postgres "cloud/internal/infra/postgres"
+	obs_prometheus "cloud/internal/observability/prometheus"
 )
 
 type Deps struct {
-	Router *core_http_server.APIRouter
-	DB     infra_postgres.Pool
+	Router        *core_http_server.APIRouter
+	DB            infra_postgres.Pool
+	Observability *obs_prometheus.Observability
 }
 
 func Register(
@@ -51,7 +53,8 @@ func Register(
 		return err
 	}
 
-	service := file_app.NewFileService(fileRepo, storage, folderRepo, eventPublisher)
+	metrics := deps.Observability.File
+	service := file_app.NewFileService(fileRepo, storage, folderRepo, eventPublisher, metrics)
 
 	handler := file_http.NewHandler(service)
 

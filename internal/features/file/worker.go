@@ -7,6 +7,7 @@ import (
 	file_storage "cloud/internal/features/file/infra/storage"
 	infra_kafka "cloud/internal/infra/kafka"
 	infra_postgres "cloud/internal/infra/postgres"
+	obs_prometheus "cloud/internal/observability/prometheus"
 	"context"
 )
 
@@ -16,7 +17,8 @@ type Worker interface {
 }
 
 type WorkerDeps struct {
-	DB infra_postgres.Pool
+	DB            infra_postgres.Pool
+	Observability *obs_prometheus.Observability
 }
 
 func NewUploadedWorker(
@@ -39,7 +41,9 @@ func NewUploadedWorker(
 
 	fileRepo := file_postgres.NewFileRepository(deps.DB)
 	storage := file_storage.NewLocalFileStorage(fileConfig.StorageDir)
-	handler := file_app.NewFileUploadedEventHandler(fileRepo, storage)
+	metrics := deps.Observability.File
+
+	handler := file_app.NewFileUploadedEventHandler(fileRepo, storage, metrics)
 	consumer := infra_kafka.NewConsumer(kafkaConfig, infra_kafka.ConsumerParams{
 		Topic:   fileKafkaConfig.TopicFileUploaded,
 		GroupID: fileKafkaConfig.GroupFileUploaded,

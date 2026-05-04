@@ -5,6 +5,7 @@ import (
 	folder_domain "cloud/internal/features/folder/domain"
 	"context"
 	"io"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -100,3 +101,23 @@ type FolderRepository interface {
 		userID int64,
 	) (folder_domain.Folder, error)
 }
+
+type FileMetrics interface {
+	UploadSucceeded(sizeBytes int64)
+	ProcessingStarted()
+	ObserveProcessingFinished(result FileProcessingResult, duration time.Duration)
+}
+
+type FileProcessingResult string
+
+const (
+	FileProcessingResultSuccess FileProcessingResult = "success"
+	FileProcessingResultFailed  FileProcessingResult = "failed"
+)
+
+type FilePreviewResult string
+
+const (
+	FilePreviewResultGenerated FilePreviewResult = "generated"
+	FilePreviewResultFailed    FilePreviewResult = "failed"
+)

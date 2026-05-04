@@ -1,6 +1,7 @@
 package app_api
 
 import (
+	app_metrics "cloud/internal/app/metrics"
 	core_logger "cloud/internal/core/logger"
 	core_http_middleware "cloud/internal/core/transport/http/middleware"
 	core_http_server "cloud/internal/core/transport/http/server"
@@ -19,7 +20,7 @@ import (
 type App struct {
 	logger        *core_logger.Logger
 	httpServer    *core_http_server.HTTPServer
-	metricsServer *metricsServer
+	metricsServer *app_metrics.Server
 	dbPool        infra_postgres.Pool
 }
 
@@ -62,12 +63,12 @@ func New(
 		}
 	}()
 
-	routers, err := registerRouters(db)
+	observability := obs_prometheus.RegisterAPI()
+
+	routers, err := registerRouters(db, observability)
 	if err != nil {
 		return nil, err
 	}
-
-	observability := obs_prometheus.Register()
 
 	httpServer := core_http_server.NewHTTPServer(
 		httpConfig,
@@ -76,7 +77,12 @@ func New(
 	)
 	httpServer.RegisterAPIRouters(routers...)
 
-	metricsServer := newMetricsServer(config, logger, observability)
+	metricsServer := app_metrics.NewServer(
+		config.MetricsAddr,
+		config.MetricsShutdownTimeout,
+		logger,
+		observability.Handler(),
+	)
 
 	return &App{
 		logger:        logger,
@@ -201,6 +207,7 @@ func buildMiddlewares(
 
 func registerRouters(
 	db infra_postgres.Pool,
+	observability *obs_prometheus.Observability,
 ) ([]core_http_server.APIRouter, error) {
 	registrations := []routerRegistration{
 		{
@@ -228,8 +235,9 @@ func registerRouters(
 			moduleName: "file",
 			registerFunc: func(router *core_http_server.APIRouter) error {
 				return file.Register(file.Deps{
-					Router: router,
-					DB:     db,
+					Router:        router,
+					DB:            db,
+					Observability: observability,
 				})
 			},
 		},
