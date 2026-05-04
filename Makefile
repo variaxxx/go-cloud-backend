@@ -9,17 +9,17 @@ DC=docker compose -f $(COMPOSE_FILE)
 	infra-up infra-down \
 	api-up api-down api-build api-rebuild \
 	worker-up worker-down worker-build worker-rebuild \
-	prometheus-up prometheus-down \
+	prometheus-up prometheus-down grafana-up grafana-down \
 	kafka-ui-up kafka-ui-down \
-	logs-api logs-worker logs-prometheus logs-kafka \
+	logs-api logs-worker logs-prometheus logs-grafana logs-kafka \
 	migrate-create migrate-up migrate-down
 
 # Stack
 up:
-	@$(DC) up -d postgres kafka api worker prometheus
+	@$(DC) up -d postgres kafka api worker prometheus grafana
 
 down:
-	@$(DC) stop postgres kafka api worker prometheus
+	@$(DC) stop postgres kafka api worker prometheus grafana
 
 # Infra
 infra-up:
@@ -40,6 +40,12 @@ prometheus-up:
 
 prometheus-down:
 	@$(DC) stop prometheus
+
+grafana-up:
+	@$(DC) up -d grafana
+
+grafana-down:
+	@$(DC) stop grafana
 
 # API
 api-up:
@@ -72,6 +78,9 @@ logs-worker:
 
 logs-prometheus:
 	@$(DC) logs -f prometheus
+
+logs-grafana:
+	@$(DC) logs -f grafana
 
 logs-kafka:
 	@$(DC) logs -f kafka
