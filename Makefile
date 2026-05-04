@@ -14,6 +14,24 @@ kafka-ui-up:
 		up -d \
 		kafka-ui
 
+prometheus-up:
+	@docker compose \
+		-f ./deploy/docker-compose.yml \
+		up -d \
+		prometheus
+
+api-up:
+	@docker compose \
+		-f ./deploy/docker-compose.yml \
+		up -d \
+		api
+
+api-build:
+	@docker compose \
+		-f ./deploy/docker-compose.yml \
+		build \
+		api
+
 infra-down:
 	@docker compose \
 		-f ./deploy/docker-compose.yml \
@@ -26,6 +44,18 @@ kafka-ui-down:
 		-f ./deploy/docker-compose.yml \
 		stop \
 		kafka-ui
+
+prometheus-down:
+	@docker compose \
+		-f ./deploy/docker-compose.yml \
+		stop \
+		prometheus
+
+api-down:
+	@docker compose \
+		-f ./deploy/docker-compose.yml \
+		stop \
+		api
 
 
 migrate-create:

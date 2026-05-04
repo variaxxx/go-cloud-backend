@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {
 		fmt.Printf(".env parsing failed: %v", err)
 		os.Exit(1)
 	}
