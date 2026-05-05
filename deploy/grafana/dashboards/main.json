@@ -3,8 +3,8 @@
   "kind": "Dashboard",
   "metadata": {
     "name": "adnk4tr",
-    "generation": 5,
-    "creationTimestamp": "2026-05-04T23:10:53Z",
+    "generation": 2,
+    "creationTimestamp": "2026-05-04T23:49:54Z",
     "labels": {},
     "annotations": {}
   },
@@ -95,10 +95,6 @@
                       {
                         "value": 0,
                         "color": "green"
-                      },
-                      {
-                        "value": 80,
-                        "color": "red"
                       }
                     ]
                   },
@@ -254,10 +250,6 @@
                       {
                         "value": 0,
                         "color": "green"
-                      },
-                      {
-                        "value": 80,
-                        "color": "red"
                       }
                     ]
                   },
@@ -410,9 +402,6 @@
                         "expr": "histogram_quantile(0.95, sum(rate(cloud_http_request_duration_seconds_bucket[5m])) by (le, method))",
                         "legendFormat": "__auto",
                         "range": true
-                      },
-                      "labels": {
-                        "grafana.app/export-label": "prometheus-1"
                       }
                     },
                     "refId": "A",
@@ -554,9 +543,6 @@
                         "expr": "histogram_quantile(0.95, sum(rate(cloud_file_processing_duration_seconds_bucket[5m])) by (le, result))",
                         "legendFormat": "__auto",
                         "range": true
-                      },
-                      "labels": {
-                        "grafana.app/export-label": "prometheus-1"
                       }
                     },
                     "refId": "A",
@@ -673,9 +659,6 @@
                         "expr": "sum(rate(cloud_file_processing_finished_total[5m])) by (result)",
                         "legendFormat": "__auto",
                         "range": true
-                      },
-                      "labels": {
-                        "grafana.app/export-label": "prometheus-1"
                       }
                     },
                     "refId": "A",
@@ -792,9 +775,6 @@
                         "expr": "rate(cloud_file_upload_bytes_total[5m])",
                         "legendFormat": "__auto",
                         "range": true
-                      },
-                      "labels": {
-                        "grafana.app/export-label": "prometheus-1"
                       }
                     },
                     "refId": "A",
