@@ -1,32 +1,98 @@
 # go-cloud-backend
 
-## Запуск
+Backend for a cloud file storage service with auth, folders, file uploads, Kafka-based async processing, PostgreSQL persistence, Prometheus metrics, Grafana dashboards, and a simple load generator.
 
-Требования:
-- Go `1.26.2`
+## Stack
 
-1. Установите зависимости:
+- Go
+- PostgreSQL
+- Kafka
+- Prometheus
+- Grafana
 
-```bash
-go mod download
-```
+## Services
 
-install pdftoppm!!!
+- `api` - Main HTTP backend
+- `worker` - Kafka consumer that processes uploaded files
+- `load` - Simple load generator that registers/logs in and uploads `.txt` files
+- `postgres` - Main database
+- `kafka` - Event broker
+- `prometheus` - Metrics collection
+- `grafana` - Metrics visualization
+- `kafka-ui` - Kafka UI for local inspection
 
-2. Создайте файл `.env` в корне проекта:
+The load service:
+- creates or logs in a test user
+- gets an access token
+- uploads simple `.txt` files in parallel
+
+## Requirements
+
+- Docker and Docker Compose
+- Make
+
+Optional for local non-Docker worker runs:
+- `pdftoppm` from `poppler-utils`
+
+## Configuration
+
+Create `.env` in the project root:
 
 ```bash
 cp .env.example .env
 ```
 
-3. Запустите API:
+## Run With Makefile
+
+### Full stack
+
+Start the main stack:
 
 ```bash
-go run ./cmd/api
+make up
 ```
 
-4. Проверьте, что сервис работает:
+This starts:
+- `postgres`
+- `kafka`
+- `api`
+- `worker`
+- `prometheus`
+- `grafana`
+
+Stop the same stack:
 
 ```bash
-curl http://localhost:8080/test
+make down
 ```
+
+### Migrations
+
+Create migration:
+
+```bash
+make migrate-create seq=create_some_table
+```
+
+Apply migrations:
+
+```bash
+make migrate-up
+```
+
+Rollback migrations:
+
+```bash
+make migrate-down
+```
+
+## Local URLs
+
+- API: [http://localhost:8000](http://localhost:8000)
+- Kafka UI: [http://localhost:8080](http://localhost:8080)
+- Prometheus: [http://localhost:9090](http://localhost:9090)
+- Grafana: [http://localhost:3030](http://localhost:3030)
+
+Grafana default credentials:
+- login: `admin`
+- password: `GF_ADMIN_PASSWORD` from `.env` or `admin`
