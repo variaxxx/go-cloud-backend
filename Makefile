@@ -9,9 +9,10 @@ DC=docker compose -f $(COMPOSE_FILE)
 	infra-up infra-down \
 	api-up api-down api-build api-rebuild \
 	worker-up worker-down worker-build worker-rebuild \
+	load-build load-run \
 	prometheus-up prometheus-down grafana-up grafana-down \
 	kafka-ui-up kafka-ui-down \
-	logs-api logs-worker logs-prometheus logs-grafana logs-kafka \
+	logs-api logs-worker logs-prometheus logs-grafana logs-kafka logs-load \
 	migrate-create migrate-up migrate-down
 
 # Stack
@@ -69,6 +70,13 @@ worker-rebuild:
 	@$(DC) build worker
 	@$(DC) up -d worker
 
+# Load
+load-build:
+	@$(DC) build load
+
+load-run:
+	@$(DC) run --rm load
+
 # Logs
 logs-api:
 	@$(DC) logs -f api
@@ -84,6 +92,9 @@ logs-grafana:
 
 logs-kafka:
 	@$(DC) logs -f kafka
+
+logs-load:
+	@$(DC) logs -f load
 
 # Stop services
 api-down:
