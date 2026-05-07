@@ -3,7 +3,7 @@
   "kind": "Dashboard",
   "metadata": {
     "name": "adnk4tr",
-    "generation": 2,
+    "generation": 3,
     "creationTimestamp": "2026-05-04T23:49:54Z",
     "labels": {},
     "annotations": {}
@@ -282,8 +282,8 @@
                       "group": "prometheus",
                       "version": "v0",
                       "spec": {
-                        "editorMode": "code",
-                        "expr": "sum(rate(cloud_http_requests_total[5m])) by (method, status)",
+                        "editorMode": "builder",
+                        "expr": "sum by(method, status) (rate(cloud_http_requests_total[$__rate_interval]))",
                         "legendFormat": "{{method}} {{status}}",
                         "range": true
                       }
@@ -398,8 +398,8 @@
                       "group": "prometheus",
                       "version": "v0",
                       "spec": {
-                        "editorMode": "code",
-                        "expr": "histogram_quantile(0.95, sum(rate(cloud_http_request_duration_seconds_bucket[5m])) by (le, method))",
+                        "editorMode": "builder",
+                        "expr": "histogram_quantile(0.95, sum by(le, method) (rate(cloud_http_request_duration_seconds_bucket[$__rate_interval])))",
                         "legendFormat": "__auto",
                         "range": true
                       }
@@ -489,32 +489,7 @@
                     }
                   }
                 },
-                "overrides": [
-                  {
-                    "__systemRef": "hideSeriesFrom",
-                    "matcher": {
-                      "id": "byNames",
-                      "options": {
-                        "mode": "exclude",
-                        "names": [
-                          "POST"
-                        ],
-                        "prefix": "All except:",
-                        "readOnly": true
-                      }
-                    },
-                    "properties": [
-                      {
-                        "id": "custom.hideFrom",
-                        "value": {
-                          "legend": false,
-                          "tooltip": true,
-                          "viz": true
-                        }
-                      }
-                    ]
-                  }
-                ]
+                "overrides": []
               }
             }
           }
@@ -539,8 +514,8 @@
                       "group": "prometheus",
                       "version": "v0",
                       "spec": {
-                        "editorMode": "code",
-                        "expr": "histogram_quantile(0.95, sum(rate(cloud_file_processing_duration_seconds_bucket[5m])) by (le, result))",
+                        "editorMode": "builder",
+                        "expr": "histogram_quantile(0.95, sum by(le, result) (rate(cloud_file_processing_duration_seconds_bucket[$__rate_interval])))",
                         "legendFormat": "__auto",
                         "range": true
                       }
@@ -655,8 +630,8 @@
                       "group": "prometheus",
                       "version": "v0",
                       "spec": {
-                        "editorMode": "code",
-                        "expr": "sum(rate(cloud_file_processing_finished_total[5m])) by (result)",
+                        "editorMode": "builder",
+                        "expr": "sum by(result) (rate(cloud_file_processing_finished_total[$__rate_interval]))",
                         "legendFormat": "__auto",
                         "range": true
                       }
@@ -771,9 +746,9 @@
                       "group": "prometheus",
                       "version": "v0",
                       "spec": {
-                        "editorMode": "code",
-                        "expr": "rate(cloud_file_upload_bytes_total[5m])",
-                        "legendFormat": "__auto",
+                        "editorMode": "builder",
+                        "expr": "rate(cloud_file_upload_bytes_total[$__rate_interval])",
+                        "legendFormat": "{{instance}}",
                         "range": true
                       }
                     },
@@ -800,7 +775,7 @@
                   "calcs": [],
                   "displayMode": "list",
                   "placement": "bottom",
-                  "showLegend": true
+                  "showLegend": false
                 },
                 "tooltip": {
                   "hideZeros": false,
