@@ -148,12 +148,35 @@ services:
     networks:
       - backend
 
+  load:
+    build:
+      context: ..
+      dockerfile: deploy/docker/load.Dockerfile
+    container_name: cloud-load
+    env_file:
+      - ../.env
+    environment:
+      LOAD_API_BASE_URL: http://api:8000
+      LOAD_USERNAME: load-tester
+      LOAD_PASSWORD: load-tester-password
+      LOAD_UPLOAD_COUNT: 100
+      LOAD_CONCURRENCY: 10
+      LOGGER_FOLDER: ./logs
+    volumes:
+      - load-logs:/app/logs
+    depends_on:
+      api:
+        condition: service_started
+    networks:
+      - backend
+
 networks:
   backend:
 
 volumes:
   api-logs:
   worker-logs:
+  load-logs:
   file-storage:
 
   postgres-data:
