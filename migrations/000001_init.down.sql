@@ -1,0 +1,12 @@
+DROP INDEX IF EXISTS cloud.idx_refresh_tokens_expires_at;
+DROP INDEX IF EXISTS cloud.idx_refresh_tokens_user_id;
+DROP TABLE IF EXISTS cloud.refresh_tokens;
+DROP TABLE IF EXISTS cloud.test_strings;
+DROP INDEX IF EXISTS cloud.uq_files_user_folder_filename;
+DROP INDEX IF EXISTS cloud.idx_files_user_status;
+DROP TABLE IF EXISTS cloud.files;
+DROP INDEX IF EXISTS cloud.uq_folders_user_parent_name;
+DROP TABLE IF EXISTS cloud.folders;
+DROP TABLE IF EXISTS cloud.users;
+DROP TYPE IF EXISTS cloud.file_status;
+DROP SCHEMA IF EXISTS cloud;
