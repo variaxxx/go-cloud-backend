@@ -3,4 +3,5 @@
 
 logs/
 /storage/
+.gocache/
 .DS_Store

@@ -73,7 +73,7 @@ func New(
 	httpServer := core_http_server.NewHTTPServer(
 		httpConfig,
 		*logger,
-		buildMiddlewares(logger, observability.HTTP)...,
+		buildMiddlewares(config, logger, observability.HTTP)...,
 	)
 	httpServer.RegisterAPIRouters(routers...)
 
@@ -193,10 +193,12 @@ func initDB(
 }
 
 func buildMiddlewares(
+	config Config,
 	logger *core_logger.Logger,
 	httpMetrics *obs_prometheus.HTTPMetrics,
 ) []core_http_middleware.Middleware {
 	return []core_http_middleware.Middleware{
+		core_http_middleware.CORS(config.FrontendURL),
 		core_http_middleware.RequestID(),
 		core_http_middleware.Logger(logger),
 		httpMetrics.Middleware(),
