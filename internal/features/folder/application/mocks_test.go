@@ -10,7 +10,7 @@ import (
 
 type mockFolderRepository struct {
 	folder           folder_domain.Folder
-	path             []string
+	path             []folder_domain.Folder
 	nested           []folder_domain.Folder
 	err              error
 	wouldCreateCycle bool
@@ -45,7 +45,7 @@ func (f *mockFolderRepository) FindByIDAndUserID(ctx context.Context, id uuid.UU
 	return f.folder, nil
 }
 
-func (f *mockFolderRepository) FindByIDAndUserIDWithPath(ctx context.Context, id uuid.UUID, userID int64) (folder_domain.Folder, []string, error) {
+func (f *mockFolderRepository) FindByIDAndUserIDWithPath(ctx context.Context, id uuid.UUID, userID int64) (folder_domain.Folder, []folder_domain.Folder, error) {
 	if f.err != nil {
 		return folder_domain.Folder{}, nil, f.err
 	}

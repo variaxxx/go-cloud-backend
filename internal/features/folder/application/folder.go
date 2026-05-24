@@ -27,7 +27,7 @@ type EditFolderParams struct {
 
 type FolderContent struct {
 	FolderName *string
-	FolderPath []string
+	FolderPath []folder_domain.Folder
 	Folders    []folder_domain.Folder
 	Files      []file_domain.File
 }
@@ -183,7 +183,7 @@ func (s *folderService) GetContent(
 	folderID *uuid.UUID,
 ) (FolderContent, error) {
 	var folderName *string
-	folderPath := make([]string, 0)
+	folderPath := make([]folder_domain.Folder, 0)
 
 	if folderID != nil {
 		folder, path, err := s.folderRepo.FindByIDAndUserIDWithPath(ctx, *folderID, userID)

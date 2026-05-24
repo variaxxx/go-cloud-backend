@@ -12,10 +12,10 @@ import (
 )
 
 type GetContentResponse struct {
-	FolderName *string       `json:"folder_name,omitempty"`
-	FolderPath []string      `json:"folder_path"`
-	Folders    []folderDTO   `json:"folders"`
-	Files      []fileDTOView `json:"files"`
+	FolderName *string         `json:"folder_name,omitempty"`
+	FolderPath []folderPathDTO `json:"folder_path"`
+	Folders    []folderDTO     `json:"folders"`
+	Files      []fileDTOView   `json:"files"`
 }
 
 func (h *handler) GetContent(rw http.ResponseWriter, r *http.Request) {
@@ -56,7 +56,7 @@ func (h *handler) GetContent(rw http.ResponseWriter, r *http.Request) {
 
 	rh.JSONResponse(GetContentResponse{
 		FolderName: content.FolderName,
-		FolderPath: content.FolderPath,
+		FolderPath: NewFolderPathDTOs(content.FolderPath),
 		Folders:    NewFolderDTOs(content.Folders),
 		Files:      NewFileDTOViews(content.Files),
 	}, http.StatusOK)

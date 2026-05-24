@@ -152,7 +152,7 @@ func (r *folderRepository) FindByIDAndUserIDWithPath(
 	ctx context.Context,
 	id uuid.UUID,
 	userID int64,
-) (folder_domain.Folder, []string, error) {
+) (folder_domain.Folder, []folder_domain.Folder, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.GetOperationTimeout())
 	defer cancel()
 
@@ -169,39 +169,52 @@ func (r *folderRepository) FindByIDAndUserIDWithPath(
 			JOIN ancestry a ON a.parent_id = f.id
 			WHERE f.user_id = $2
 		)
-		SELECT
-			cur.id,
-			cur.created_at,
-			cur.updated_at,
-			cur.name,
-			cur.user_id,
-			cur.parent_id,
-			(SELECT ARRAY_AGG(name ORDER BY depth DESC) FROM ancestry) AS path
-		FROM ancestry cur
-		WHERE cur.depth = 0;
+		SELECT id, created_at, updated_at, name, user_id, parent_id, depth
+		FROM ancestry
+		ORDER BY depth DESC;
 	`
 
+	rows, err := r.pool.Query(ctx, query, id, userID)
+	if err != nil {
+		return folder_domain.Folder{}, nil, fmt.Errorf("find folder by id and user id with path: %w", err)
+	}
+	defer rows.Close()
+
 	var folder folder_domain.Folder
-	var dbParentID *uuid.UUID
-	var path []string
-	if err := r.pool.QueryRow(ctx, query, id, userID).Scan(
-		&folder.ID,
-		&folder.CreatedAt,
-		&folder.UpdatedAt,
-		&folder.Name,
-		&folder.UserID,
-		&dbParentID,
-		&path,
-	); err != nil {
-		switch {
-		case errors.Is(err, pgx.ErrNoRows):
-			return folder_domain.Folder{}, nil, fmt.Errorf("find folder by id and user id with path: %w", core_errors.ErrNotFound)
-		default:
-			return folder_domain.Folder{}, nil, fmt.Errorf("find folder by id and user id with path: %w", err)
+	path := make([]folder_domain.Folder, 0)
+	found := false
+	for rows.Next() {
+		var pathFolder folder_domain.Folder
+		var dbParentID *uuid.UUID
+		var depth int
+		if err := rows.Scan(
+			&pathFolder.ID,
+			&pathFolder.CreatedAt,
+			&pathFolder.UpdatedAt,
+			&pathFolder.Name,
+			&pathFolder.UserID,
+			&dbParentID,
+			&depth,
+		); err != nil {
+			return folder_domain.Folder{}, nil, fmt.Errorf("scan folder path row: %w", err)
+		}
+
+		pathFolder.ParentID = dbParentID
+		path = append(path, pathFolder)
+
+		if depth == 0 {
+			folder = pathFolder
+			found = true
 		}
 	}
 
-	folder.ParentID = dbParentID
+	if err := rows.Err(); err != nil {
+		return folder_domain.Folder{}, nil, fmt.Errorf("iterate folder path rows: %w", err)
+	}
+
+	if !found {
+		return folder_domain.Folder{}, nil, fmt.Errorf("find folder by id and user id with path: %w", core_errors.ErrNotFound)
+	}
 
 	return folder, path, nil
 }

@@ -34,7 +34,7 @@ type FolderRepository interface {
 		ctx context.Context,
 		id uuid.UUID,
 		userID int64,
-	) (folder_domain.Folder, []string, error)
+	) (folder_domain.Folder, []folder_domain.Folder, error)
 
 	FindByParentIDAndUserID(
 		ctx context.Context,

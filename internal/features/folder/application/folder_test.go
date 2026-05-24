@@ -138,9 +138,13 @@ func TestFolderServiceGetContent(t *testing.T) {
 	folderName := "docs"
 	nested := []folder_domain.Folder{{ID: uuid.New(), Name: "nested", UserID: userID}}
 	files := []file_domain.File{{ID: uuid.New(), Filename: "a.txt", UserID: userID}}
+	rootID := uuid.New()
 	repo := &mockFolderRepository{
 		folder: folder_domain.Folder{ID: folderID, Name: folderName, UserID: userID},
-		path:   []string{"root", "docs"},
+		path: []folder_domain.Folder{
+			{ID: rootID, Name: "root", UserID: userID},
+			{ID: folderID, Name: "docs", UserID: userID},
+		},
 		nested: nested,
 	}
 	fileRepo := &mockFolderFileRepository{files: files}
@@ -154,8 +158,8 @@ func TestFolderServiceGetContent(t *testing.T) {
 	if got.FolderName == nil || *got.FolderName != folderName {
 		t.Fatalf("folder name = %v, want %s", got.FolderName, folderName)
 	}
-	if len(got.FolderPath) != 2 || got.FolderPath[1] != "docs" {
-		t.Fatalf("folder path = %v, want [root docs]", got.FolderPath)
+	if len(got.FolderPath) != 2 || got.FolderPath[0].ID != rootID || got.FolderPath[1].ID != folderID || got.FolderPath[1].Name != "docs" {
+		t.Fatalf("folder path = %v, want root and docs folders", got.FolderPath)
 	}
 	if len(got.Folders) != 1 || got.Folders[0].ID != nested[0].ID {
 		t.Fatalf("folders = %v, want nested folder", got.Folders)
