@@ -2,6 +2,8 @@
 
 Backend for a cloud file storage service with auth, folders, file uploads, Kafka-based async processing, PostgreSQL persistence, Prometheus metrics, Grafana dashboards, and a simple load generator.
 
+> [Frontend repository](https://github.com/variaxxx/go-cloud-frontend)
+
 ## Stack
 
 - Go
