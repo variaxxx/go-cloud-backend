@@ -42,5 +42,11 @@ func (h *handler) Routes() []core_http_server.Route {
 			h.RefreshTokens,
 			nil,
 		),
+		core_http_server.NewRoute(
+			http.MethodPost,
+			"/logout",
+			h.Logout,
+			nil,
+		),
 	}
 }

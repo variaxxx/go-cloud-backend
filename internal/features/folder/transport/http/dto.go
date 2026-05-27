@@ -16,6 +16,11 @@ type folderDTO struct {
 	UpdatedAt string     `json:"updated_at"`
 }
 
+type folderPathDTO struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
 func NewFolderDTO(folder folder_domain.Folder) folderDTO {
 	return folderDTO{
 		ID:        folder.ID,
@@ -30,6 +35,22 @@ func NewFolderDTOs(folders []folder_domain.Folder) []folderDTO {
 	dtos := make([]folderDTO, 0, len(folders))
 	for _, folder := range folders {
 		dtos = append(dtos, NewFolderDTO(folder))
+	}
+
+	return dtos
+}
+
+func NewFolderPathDTO(folder folder_domain.Folder) folderPathDTO {
+	return folderPathDTO{
+		ID:   folder.ID,
+		Name: folder.Name,
+	}
+}
+
+func NewFolderPathDTOs(folders []folder_domain.Folder) []folderPathDTO {
+	dtos := make([]folderPathDTO, 0, len(folders))
+	for _, folder := range folders {
+		dtos = append(dtos, NewFolderPathDTO(folder))
 	}
 
 	return dtos
